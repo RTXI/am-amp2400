@@ -42,10 +42,8 @@ class AMAmp : public DefaultGUIModel {
 	
 		void initParameters(void);
 		void customizeGUI(void);
-		void execute(void);
 		void updateDAQ(void);
 		void updateGUI(void);
-		void refresh(void);
 	
 	protected:
 		virtual void update(DefaultGUIModel::update_flags_t);
@@ -59,23 +57,17 @@ class AMAmp : public DefaultGUIModel {
 		double vclamp_ao_gain; // 20 mV / V
 
 		int input_channel, output_channel;
-		double output_gain, temp_gain, headstage_gain;
 		int amp_mode, temp_mode;
-		
-		bool settings_changed;
 
 		DAQ::Device *device;
 	
-		QRadioButton *iclampButton, *vclampButton;
+		QRadioButton *iclampButton, *vclampButton, *izeroButton, *vcompButton, *vtestButton, *iresistButton, *ifollowButton;
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
 		AMAmpComboBox *headstageBox, *outputGainBox;
-		QLabel *ampModeLabel;
 
 	private slots:
 		void updateMode(int);
-		void updateOutputGain(int);
-		void updateHeadstageGain(int);
 		void updateInputChannel(int);
 		void updateOutputChannel(int);
 };

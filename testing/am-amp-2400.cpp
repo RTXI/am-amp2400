@@ -65,7 +65,7 @@ static void getDevice(DAQ::Device *d, void *p) {
 }
 
 // Just the constructor. 
-AMAmp::AMAmp(void) : DefaultGUIModel("AMAmp 200 Controller", ::vars, ::num_vars) {
+AMAmp::AMAmp(void) : DefaultGUIModel("AM Amp 2400 Controller", ::vars, ::num_vars) {
 	setWhatsThis("<p>Yeah, I'll get to this later... <br>-Ansel</p>");
 	DefaultGUIModel::createGUI(vars, num_vars);
 	initParameters();
@@ -102,8 +102,6 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 		case INIT:
 			setParameter("Input Channel", input_channel);
 			setParameter("Output Channel", output_channel);
-//			setParameter("Headstage Gain", headstage_gain);
-//			setParameter("Output Gain", output_gain);
 			setParameter("Amplifier Mode", amp_mode);
 
 			updateGUI();
@@ -112,8 +110,6 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 		case MODIFY:
 			input_channel = getParameter("Input Channel").toInt();
 			output_channel = getParameter("Output Channel").toInt();
-//			output_gain = getParameter("Output Gain").toDouble();
-//			headstage_gain = getParameter("Headstage Gain").toDouble();
 			if (amp_mode != getParameter("Amplifier Mode").toInt()) {
 				ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: normal; }");
 				ampButtonGroup->button(getParameter("Amplifier Mode").toInt())->setStyleSheet("QRadioButton { font: bold;}");
@@ -126,8 +122,6 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			// blacken the GUI to reflect that changes have been saved to variables.
 			inputBox->blacken();
 			outputBox->blacken();
-			headstageBox->blacken();
-			outputGainBox->blacken();
 			break;
 
 		default:
@@ -226,52 +220,32 @@ void AMAmp::customizeGUI(void) {
 	ampButtonGroup->addButton(iclampButton, 1);
 	vclampButton = new QRadioButton("VClamp");
 	ampButtonGroup->addButton(vclampButton, 2);
-	izeroButton = new QRadioButton("");
+	izeroButton = new QRadioButton("I = 0");
+	ampButtonGroup->addButton(izeroButton, 3);
+	vcompButton = new QRadioButton("VComp");
+	ampButtonGroup->addButton(vcompButton, 4);
+	vtestButton = new QRadioButton("VTest");
+	ampButtonGroup->addButton(vtestButton, 5);
+	iresistButton = new QRadioButton("IResist");
+	ampButtonGroup->addButton(iresistButton, 6);
+	ifollowButton = new QRadioButton("IFollow");
+	ampButtonGroup->addButton(ifollowButton, 7);
+
+	ampModeBoxLayout->addWidget(vclampButton);
+	ampModeBoxLayout->addWidget(izeroButton);
+	ampModeBoxLayout->addWidget(iclampButton);
+	ampModeBoxLayout->addWidget(vcompButton);
+	ampModeBoxLayout->addWidget(vtestButton);
+	ampModeBoxLayout->addWidget(iresistButton);
+	ampModeBoxLayout->addWidget(ifollowButton);
 
 	// add widgets to custom layout
-	customLayout->addWidget(ioBoxLayout, 0, 0);
-	customLayout->addWidget(ampModeBoxLayout, 2, 0);
+	customLayout->addLayout(ioBoxLayout, 0, 0);
+	customLayout->addLayout(ampModeBoxLayout, 2, 0);
 	setLayout(customLayout);
 
 	// connect the widgets to the signals
 	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateMode(int)));
-	QObject::connect(outputGainBox, SIGNAL(activated(int)), this, SLOT(updateOutputGain(int)));
-	QObject::connect(headstageBox, SIGNAL(activated(int)), this, SLOT(updateHeadstageGain(int)));
 	QObject::connect(inputBox, SIGNAL(valueChanged(int)), this, SLOT(updateInputChannel(int)));
 	QObject::connect(outputBox, SIGNAL(valueChanged(int)), this, SLOT(updateOutputChannel(int)));
-}
-
-
-// overload the refresh function to display Auto mode settings and update the DAQ (when in Auto)
-void AMAmp::refresh(void) {
-	for (std::map<QString, param_t>::iterator i = parameter.begin(); i!= parameter.end(); ++i) {
-		if (i->second.type & (STATE | EVENT)) {
-			i->second.edit->setText(QString::number(getValue(i->second.type, i->second.index)));
-			palette.setBrush(i->second.edit->foregroundRole(), Qt::darkGray);
-			i->second.edit->setPalette(palette);
-		} else if ((i->second.type & PARAMETER) && !i->second.edit->isModified() && i->second.edit->text() != *i->second.str_value) {
-			i->second.edit->setText(*i->second.str_value);
-		} else if ((i->second.type & COMMENT) && !i->second.edit->isModified() && i->second.edit->text() != QString::fromStdString(getValueString(COMMENT, i->second.index))) {
-			i->second.edit->setText(QString::fromStdString(getValueString(COMMENT, i->second.index)));
-		}
-	}
-	pauseButton->setChecked(!getActive());
-
-	if (getActive()) {
-		switch(amp_mode) {
-			case 1:
-				ampModeLabel->setText("IClamp");
-				break;
-			case 2:
-				ampModeLabel->setText("VClamp");
-				break;
-			default:
-				break;
-		}
-	}
-	
-	if (settings_changed) {
-		updateDAQ();
-		settings_changed = false;
-	}
 }
