@@ -156,7 +156,6 @@ void AMAmp::updateInputChannel(int value) {
 
 // updates the DAQ settings whenever the 'Set DAQ' button is pressed or when Auto mode detects a need for it.
 void AMAmp::updateDAQ(void) {
-//	if (!device) return;
 
 	switch(amp_mode) {
 		case 1: // VClamp
@@ -275,7 +274,7 @@ void AMAmp::updateDAQ(void) {
 void AMAmp::customizeGUI(void) {
 	QGridLayout *customLayout = DefaultGUIModel::getLayout();
 	
-//	customLayout->itemAtPosition(1,0)->widget()->setVisible(false);
+	customLayout->itemAtPosition(1,0)->widget()->setVisible(false);
 	DefaultGUIModel::pauseButton->setVisible(false);
 	DefaultGUIModel::modifyButton->setText("Set DAQ");
 	DefaultGUIModel::unloadButton->setVisible(false);
