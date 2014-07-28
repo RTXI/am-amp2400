@@ -45,13 +45,11 @@ extern "C" Plugin::Object * createRTXIPlugin(void) {
 };
 
 static DefaultGUIModel::variable_t vars[] = {
-	{ "Mode Bit 1", "", DefaultGUIModel::OUTPUT, }, // telegraph from DAQ used in 'Auto' mode
-	{ "Mode Bit 2", "", DefaultGUIModel::OUTPUT, }, // telegraph from DAQ used in 'Auto' mode
+	{ "Mode Bit 1", "", DefaultGUIModel::OUTPUT, }, 
+	{ "Mode Bit 2", "", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 4", "", DefaultGUIModel::OUTPUT, },
 	{ "Input Channel", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, }, 
 	{ "Output Channel", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
-//	{ "Headstage Gain", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE, }, 
-//	{ "Output Gain", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE, }, 
 	{ "Amplifier Mode", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
 };
 
@@ -78,20 +76,19 @@ AMAmp::~AMAmp(void) {};
 
 void AMAmp::initParameters(void) {
 	input_channel = 0;
-	output_channel = 0;
-	amp_mode = 1;
-//	output_gain = headstage_gain = 1;
+	output_channel = 1;
+	amp_mode = 2;
 
 	device = 0;
 	DAQ::Manager::getInstance()->foreachDevice(getDevice, &device);
 
 	// these are amplifier-specific settings. 
-	iclamp_ai_gain = 1; // (1 V/V)
-	iclamp_ao_gain = 1.0 / 2e-9; // (2 nA/V)
-	izero_ai_gain = 1; // (1 V/V)
-	izero_ao_gain = 0; // No output
-	vclamp_ai_gain = 1e-12/1e-3; // (1 mV/pA)
-	vclamp_ao_gain = 1 / 20e-3; // (20 mV/V)
+	iclamp_ai_gain = 200e-3;
+	iclamp_ao_gain = 500e6;
+	izero_ai_gain = 200e-3;
+	izero_ao_gain = 1;
+	vclamp_ai_gain = 2e-9;
+	vclamp_ao_gain = 50;
 };
 
 
@@ -104,12 +101,18 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			setParameter("Output Channel", output_channel);
 			setParameter("Amplifier Mode", amp_mode);
 
-			updateGUI();
+			inputBox->setValue(input_channel);
+			outputBox->setValue(output_channel);
+			ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
+			ampButtonGroup->button(amp_mode)->setChecked(true);
 			break;
 		
 		case MODIFY:
 			input_channel = getParameter("Input Channel").toInt();
 			output_channel = getParameter("Output Channel").toInt();
+
+			inputBox->setValue(input_channel);
+			outputBox->setValue(output_channel);
 			if (amp_mode != getParameter("Amplifier Mode").toInt()) {
 				ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: normal; }");
 				ampButtonGroup->button(getParameter("Amplifier Mode").toInt())->setStyleSheet("QRadioButton { font: bold;}");
@@ -117,7 +120,6 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			}
 
 			updateDAQ();
-			updateGUI(); // only needed here because doLoad doesn't update the gui on its own. Yes, it does cause a bug with the headstage option, but it doesn't matter to anything other than whatever OCD tendencies we all probably have. You're welcome. -Ansel
 
 			// blacken the GUI to reflect that changes have been saved to variables.
 			inputBox->blacken();
@@ -129,55 +131,132 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 	}
 }
 
-// used solely for initializing the gui when the module is opened or loaded via doLoad
-void AMAmp::updateGUI(void) {
-	// set the i/o channels
-	inputBox->setValue(input_channel);
-	outputBox->setValue(output_channel);
-
-	// set the amplifier mode. The mode currently set is in bold.
-//	switch(amp_mode) {
-//		case 1:
-//			ampButtonGroup->button(1)->setChecked(true);
-//			ampButtonGroup->button(1)->setStyleSheet("QRadioButton { font: bold; }");
-//			ampButtonGroup->button(2)->setStyleSheet("QRadioButton { font: normal; }");
-//		case 2:
-//			ampButtonGroup->button(2)->setChecked(true);
-//			ampButtonGroup->button(2)->setStyleSheet("QRadioButton { font: bold; }");
-//			ampButtonGroup->button(1)->setStyleSheet("QRadioButton { font: normal; }");
-//		default:
-//			ampButtonGroup->button(1)->setChecked(true);
-//			ampButtonGroup->button(1)->setStyleSheet("QRadioButton { font: bold; }");
-//			ampButtonGroup->button(2)->setStyleSheet("QRadioButton { font: normal; }");
-//	}
-}
-
 // update the text in the block made by createGUI whenever the mode option changes. 
 void AMAmp::updateMode(int value) {
 	parameter["Amplifier Mode"].edit->setText(QString::number(value));
 	parameter["Amplifier Mode"].edit->setModified(true);
+
+	update( MODIFY );
 	return;
 }
 
 // updates the output channel text whenever the value in the gui spinbox changes.
 void AMAmp::updateOutputChannel(int value) {
 	parameter["Output Channel"].edit->setText(QString::number(value));
-	parameter["Output Channel"].edit->setText(QString::number(value));
+	parameter["Output Channel"].edit->setModified(true);
 	return;
 }
 
 // updates input channel
 void AMAmp::updateInputChannel(int value) {
 	parameter["Input Channel"].edit->setText(QString::number(value));
-	parameter["Input Channel"].edit->setText(QString::number(value));
+	parameter["Input Channel"].edit->setModified(true);
 	return;
 }
 
 // updates the DAQ settings whenever the 'Set DAQ' button is pressed or when Auto mode detects a need for it.
 void AMAmp::updateDAQ(void) {
-	if (!device) return;
+//	if (!device) return;
 
 	switch(amp_mode) {
+		case 1: // VClamp
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 0);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 0.0;
+			output(1) = 0.0;
+			output(2) = 5.0;
+			break;
+
+		case 2: // I = 0
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 3);
+				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 5.0;
+			output(1) = 5.0;
+			output(2) = 0.0;
+			break;
+
+		case 3: // IClamp
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 3);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 0.0;
+			output(1) = 0.0;
+			output(2) = 5.0;
+			break;
+
+		case 4: // VComp
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 0);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 5.0;
+			output(1) = 0.0;
+			output(2) = 0.0;
+			break;
+
+		case 5: // VTest
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 0);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 0.0;
+			output(1) = 0.0;
+			output(2) = 0.0;
+			break;
+
+		case 6: // IResist
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 3);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 5.0;
+			output(1) = 0.0;
+			output(2) = 5.0;
+			break;
+
+		case 7: // IFollow
+			if(device) {
+				device->setAnalogRange(DAQ::AI, input_channel, 3);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogCalibration(DAQ::AI, input_channel);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogCalibration(DAQ::AO, output_channel);
+			}
+
+			output(0) = 0.0;
+			output(1) = 5.0;
+			output(2) = 5.0;
+			break;
+
 		default:
 			std::cout<<"ERROR. Something went horribly wrong.\n The amplifier mode is set to an unknown value"<<std::endl;
 			break;
@@ -216,12 +295,12 @@ void AMAmp::customizeGUI(void) {
 	// create amp mode groupbox
 	QVBoxLayout *ampModeBoxLayout = new QVBoxLayout;
 	ampButtonGroup = new QButtonGroup;
-	iclampButton = new QRadioButton("IClamp");
-	ampButtonGroup->addButton(iclampButton, 1);
 	vclampButton = new QRadioButton("VClamp");
-	ampButtonGroup->addButton(vclampButton, 2);
+	ampButtonGroup->addButton(vclampButton, 1);
 	izeroButton = new QRadioButton("I = 0");
-	ampButtonGroup->addButton(izeroButton, 3);
+	ampButtonGroup->addButton(izeroButton, 2);
+	iclampButton = new QRadioButton("IClamp");
+	ampButtonGroup->addButton(iclampButton, 3);
 	vcompButton = new QRadioButton("VComp");
 	ampButtonGroup->addButton(vcompButton, 4);
 	vtestButton = new QRadioButton("VTest");
@@ -241,7 +320,7 @@ void AMAmp::customizeGUI(void) {
 
 	// add widgets to custom layout
 	customLayout->addLayout(ioBoxLayout, 0, 0);
-	customLayout->addLayout(ampModeBoxLayout, 2, 0);
+	customLayout->addLayout(ampModeBoxLayout, 2, 0, Qt::AlignCenter);
 	setLayout(customLayout);
 
 	// connect the widgets to the signals

@@ -3,7 +3,7 @@ PLUGIN_NAME = am_amp2400
 HEADERS = am-amp-2400.h 
 
 SOURCES = am-amp-2400.cpp \
-			moc_am-amp-4200.cpp 
+			moc_am-amp-2400.cpp 
 
 LIBS = 
 
