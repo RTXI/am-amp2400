@@ -70,6 +70,7 @@ AMAmp::AMAmp(void) : DefaultGUIModel("AM Amp 2400 Controller", ::vars, ::num_var
 	customizeGUI();
 	update( INIT );
 	DefaultGUIModel::refresh();
+	QTimer::singleShot(0, this, SLOT(resizeMe()));
 };
 
 AMAmp::~AMAmp(void) {};
