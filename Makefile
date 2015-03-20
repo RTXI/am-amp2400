@@ -1,9 +1,12 @@
 PLUGIN_NAME = am_amp2400
 
-HEADERS = am-amp-2400.h 
+HEADERS = am_2400_commander.h \
+          am_2400_commanderUI.h
 
-SOURCES = am-amp-2400.cpp \
-			moc_am-amp-2400.cpp 
+SOURCES = am_2400_commander.cpp \
+          am_2400_commanderUI.cpp \
+          moc_am_2400_commander.cpp \
+          moc_am_2400_commanderUI.cpp 
 
 LIBS = 
 
