@@ -15,7 +15,7 @@ None
 ####Output Channels  
 1. output(0) - Mode Bit 1
 2. output(1) - Mode Bit 2
-3. output(3) - Mode Bit 4
+3. output(2) - Mode Bit 4
 
 ####Parameters
 1. Input Channel
