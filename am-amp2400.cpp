@@ -19,7 +19,8 @@ void AMAmpComboBox::redden(void) {
 }
 
 // Create wrapper for spinboxes. Function is analogous to AMAmpComboBox
-// SpinBox was used instead of DefaultGUILineEdit because palette.setBrush(etc...) doesn't change colors when changes are done programmatically. 
+// SpinBox was used instead of DefaultGUILineEdit because palette.setBrush(etc...) 
+// doesn't change colors when changes are done programmatically. 
 AMAmpSpinBox::AMAmpSpinBox(QWidget *parent) : QSpinBox(parent) {
 	QObject::connect(this, SIGNAL(valueChanged(int)), this, SLOT(redden(void)));
 }
@@ -37,7 +38,8 @@ void AMAmpSpinBox::redden(void) {
 }
 
 
-/* This is the real deal, the definitions for all the AMAmp functions.
+/* 
+ * This is the real deal, the definitions for all the AMAmp functions.
  */
 extern "C" Plugin::Object * createRTXIPlugin(void) {
 	return new AMAmp();
@@ -136,7 +138,8 @@ void AMAmp::updateMode(int value) {
 	parameter["Amplifier Mode"].edit->setText(QString::number(value));
 	parameter["Amplifier Mode"].edit->setModified(true);
 
-	update( MODIFY );
+//	update( MODIFY );
+	modify();
 	return;
 }
 
