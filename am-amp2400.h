@@ -10,7 +10,7 @@ class AMAmpComboBox : public QComboBox {
 		AMAmpComboBox(QWidget * =0);
 		~AMAmpComboBox(void);
 		void blacken(void);
-		QPalette palette;
+//		QPalette palette;
 
 	public slots:
 		void redden(void);
@@ -25,7 +25,7 @@ class AMAmpSpinBox : public QSpinBox {
 		AMAmpSpinBox(QWidget * =0);
 		~AMAmpSpinBox(void);
 		void blacken(void);
-		QPalette palette;
+//		QPalette palette;
 
 	public slots:
 		void redden(void);
