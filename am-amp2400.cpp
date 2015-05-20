@@ -9,14 +9,10 @@ AMAmpComboBox::AMAmpComboBox(QWidget *parent) : QComboBox(parent) {
 AMAmpComboBox::~AMAmpComboBox(void) {}
 
 void AMAmpComboBox::blacken(void) {
-//	palette.setColor(QPalette::Text, Qt::black);
-//	this->setPalette(palette);
 	this->setStyleSheet("QComboBox { color:black; }");
 }
 
 void AMAmpComboBox::redden(void) {
-//	palette.setColor(QPalette::Text, Qt::red);
-//	this->setPalette(palette);
 	this->setStyleSheet("QComboBox { color:red; }");
 }
 
@@ -30,14 +26,10 @@ AMAmpSpinBox::AMAmpSpinBox(QWidget *parent) : QSpinBox(parent) {
 AMAmpSpinBox::~AMAmpSpinBox(void) {}
 
 void AMAmpSpinBox::blacken(void) {
-//	palette.setColor(QPalette::Text, Qt::black);
-//	this->setPalette(palette);
 	this->setStyleSheet("QSpinBox { color:black; }");
 }
 
 void AMAmpSpinBox::redden(void) {
-//	palette.setColor(QPalette::Text, Qt::red);
-//	this->setPalette(palette);
 	this->setStyleSheet("QSpinBox { color:red; }");
 }
 
