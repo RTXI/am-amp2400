@@ -1,6 +1,5 @@
-#include <QtGui>
 #include <iostream>
-#include "am-amp-2400.h"
+#include "am-amp2400.h"
 
 // Create wrapper for QComboBox. Options go red when changed and black when 'Set DAQ' is hit.
 AMAmpComboBox::AMAmpComboBox(QWidget *parent) : QComboBox(parent) {
