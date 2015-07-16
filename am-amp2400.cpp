@@ -184,8 +184,8 @@ void AMAmp::updateDAQ(void) {
 			}
 
 			output(0) = 0.0;
-			output(1) = 0.0;
-			output(2) = 5.0;
+			output(1) = 5.0;
+			output(2) = 0.0;
 			break;
 
 		case 2: // I = 0
