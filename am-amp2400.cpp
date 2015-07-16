@@ -59,12 +59,12 @@ extern "C" Plugin::Object * createRTXIPlugin(void) {
 };
 
 static DefaultGUIModel::variable_t vars[] = {
-	{ "Mode Bit 1", "", DefaultGUIModel::OUTPUT, }, 
-	{ "Mode Bit 2", "", DefaultGUIModel::OUTPUT, }, 
-	{ "Mode Bit 4", "", DefaultGUIModel::OUTPUT, },
-	{ "Input Channel", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, }, 
-	{ "Output Channel", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
-	{ "Amplifier Mode", "", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
+	{ "Mode Bit 1", "Bit 1 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
+	{ "Mode Bit 2", "Bit 2 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
+	{ "Mode Bit 4", "Bit 4 of signal sent to amplfier", DefaultGUIModel::OUTPUT, },
+	{ "Input Channel", "Input channel to scale (#)", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, }, 
+	{ "Output Channel", "Output channel to scale (#)", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
+	{ "Amplifier Mode", "Mode to telegraph to amplifier", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
 };
 
 static size_t num_vars = sizeof(vars) / sizeof(DefaultGUIModel::variable_t);
@@ -78,7 +78,7 @@ static void getDevice(DAQ::Device *d, void *p) {
 
 // Just the constructor. 
 AMAmp::AMAmp(void) : DefaultGUIModel("AM Amp 2400 Controller", ::vars, ::num_vars) {
-	setWhatsThis("<p>Yeah, I'll get to this later... <br>-Ansel</p>");
+	setWhatsThis("<p>Controls the AM Amp 2400 amplifier by scaling the gains on the analog input/output channels and sending a mode telegraph to set the amplifier mode (custom).</p>");
 	DefaultGUIModel::createGUI(vars, num_vars);
 	initParameters();
 	customizeGUI();
