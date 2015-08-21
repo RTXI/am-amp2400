@@ -309,6 +309,8 @@ void AMAmp::customizeGUI(void) {
 
 	// create amp mode groupbox
 	QVBoxLayout *ampModeBoxLayout = new QVBoxLayout;
+
+	// make the buttons
 	ampButtonGroup = new QButtonGroup;
 	vclampButton = new QRadioButton("VClamp");
 	ampButtonGroup->addButton(vclampButton, 1);
@@ -325,13 +327,45 @@ void AMAmp::customizeGUI(void) {
 	ifollowButton = new QRadioButton("IFollow");
 	ampButtonGroup->addButton(ifollowButton, 7);
 
-	ampModeBoxLayout->addWidget(vclampButton);
-	ampModeBoxLayout->addWidget(izeroButton);
-	ampModeBoxLayout->addWidget(iclampButton);
-	ampModeBoxLayout->addWidget(vcompButton);
-	ampModeBoxLayout->addWidget(vtestButton);
-	ampModeBoxLayout->addWidget(iresistButton);
-	ampModeBoxLayout->addWidget(ifollowButton);
+	// make the offset edit boxes
+	QHBoxLayout *vclampGroup = new QHBoxLayout;
+	QHBoxLayout *izeroGroup = new QHBoxLayout;
+	QHBoxLayout *iclampGroup = new QHBoxLayout;
+	QHBoxLayout *vcompGroup = new QHBoxLayout;
+	QHBoxLayout *vtestGroup = new QHBoxLayout;
+	QHBoxLayout *iresistGroup = new QHBoxLayout;
+	QHBoxLayout *ifollowGroup = new QHBoxLayout;
+
+	vclampEdit = new QLineEdit();
+	izeroEdit = new QLineEdit();
+	iclampEdit = new QLineEdit();
+	vcompEdit = new QLineEdit();
+	vtestEdit = new QLineEdit();
+	iresistEdit = new QLineEdit();
+	ifollowEdit = new QLineEdit();
+
+	vclampGroup->addWidget(vclampButton);
+	vclampGroup->addWidget(vclampEdit);
+	izeroGroup->addWidget(izeroButton);
+	izeroGroup->addWidget(izeroEdit);
+	iclampGroup->addWidget(iclampButton);
+	iclampGroup->addWidget(iclampEdit);
+	vcompGroup->addWidget(vcompButton);
+	vcompGroup->addWidget(vcompEdit);
+	vtestGroup->addWidget(vtestButton);
+	vtestGroup->addWidget(vtestEdit);
+	iresistGroup->addWidget(iresistButton);
+	iresistGroup->addWidget(iresistEdit);
+	ifollowGroup->addWidget(ifollowButton);
+	ifollowGroup->addWidget(ifollowEdit);
+
+	ampModeBoxLayout->addLayout(vclampGroup);
+	ampModeBoxLayout->addLayout(izeroGroup);
+	ampModeBoxLayout->addLayout(iclampGroup);
+	ampModeBoxLayout->addLayout(vcompGroup);
+	ampModeBoxLayout->addLayout(vtestGroup);
+	ampModeBoxLayout->addLayout(iresistGroup);
+	ampModeBoxLayout->addLayout(ifollowGroup);
 
 	// add widgets to custom layout
 	customLayout->addLayout(ioBoxLayout, 0, 0);

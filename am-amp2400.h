@@ -75,7 +75,10 @@ class AMAmp : public DefaultGUIModel {
 
 		DAQ::Device *device;
 	
-		QRadioButton *iclampButton, *vclampButton, *izeroButton, *vcompButton, *vtestButton, *iresistButton, *ifollowButton;
+		QRadioButton *iclampButton, *vclampButton, *izeroButton, *vcompButton, 
+		             *vtestButton, *iresistButton, *ifollowButton;
+		QLineEdit *iclampEdit, *vclampEdit, *izeroEdit, *vcompEdit,
+		          *vtestEdit, *iresistEdit, *ifollowEdit;
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
 		AMAmpComboBox *headstageBox, *outputGainBox;
