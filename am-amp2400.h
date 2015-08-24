@@ -18,6 +18,19 @@
 #include <daq.h>
 #include <default_gui_model.h>
 
+class AMAmpLineEdit : public QLineEdit {
+
+	Q_OBJECT
+
+	public:
+		AMAmpLineEdit(QWidget * =0);
+		~AMAmpLineEdit(void);
+		void blacken(void);
+
+	public slots:
+		void redden(void);
+};
+
 class AMAmpComboBox : public QComboBox {
 
 	Q_OBJECT
@@ -30,7 +43,6 @@ class AMAmpComboBox : public QComboBox {
 	public slots:
 		void redden(void);
 };
-
 
 class AMAmpSpinBox : public QSpinBox {
 
@@ -58,6 +70,7 @@ class AMAmp : public DefaultGUIModel {
 		void customizeGUI(void);
 		void updateDAQ(void);
 		void updateGUI(void);
+//		void setOffset(void);
 	
 	protected:
 		virtual void update(DefaultGUIModel::update_flags_t);
@@ -70,20 +83,34 @@ class AMAmp : public DefaultGUIModel {
 		double vclamp_ai_gain; // 1 mV / pA
 		double vclamp_ao_gain; // 20 mV / V
 
+/*
+		double iclamp_offset, vclamp_offset, izero_offset, vcomp_offset,
+		       vtest_offset, iresist_offset, ifollow_offset;
+*/
+
 		int input_channel, output_channel;
 		int amp_mode, temp_mode;
+		double amp_offset;
 
 		DAQ::Device *device;
 	
 		QRadioButton *iclampButton, *vclampButton, *izeroButton, *vcompButton, 
 		             *vtestButton, *iresistButton, *ifollowButton;
+/*
 		QLineEdit *iclampEdit, *vclampEdit, *izeroEdit, *vcompEdit,
 		          *vtestEdit, *iresistEdit, *ifollowEdit;
+*/
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
 		AMAmpComboBox *headstageBox, *outputGainBox;
+		AMAmpLineEdit *offsetEdit;
+
+		void doSave(Settings::Object::State &) const;
+		void doLoad(const Settings::Object::State &);
 
 	private slots:
+		void setOffset(const QString &);
+		void updateOffset(void);
 		void updateMode(int);
 		void updateInputChannel(int);
 		void updateOutputChannel(int);

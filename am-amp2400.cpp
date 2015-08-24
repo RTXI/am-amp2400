@@ -33,6 +33,21 @@ void AMAmpComboBox::redden(void) {
 	this->setStyleSheet("QComboBox { color:red; }");
 }
 
+// Create wrapper for QLineEdit. Options go red when changed and black when 'Set DAQ' is hit.
+AMAmpLineEdit::AMAmpLineEdit(QWidget *parent) : QLineEdit(parent) {
+	QObject::connect(this, SIGNAL(textEdited(const QString &)), this, SLOT(redden(void)));
+}
+
+AMAmpLineEdit::~AMAmpLineEdit(void) {}
+
+void AMAmpLineEdit::blacken(void) {
+	this->setStyleSheet("QLineEdit { color:black; }");
+}
+
+void AMAmpLineEdit::redden(void) {
+	this->setStyleSheet("QLineEdit { color:red; }");
+}
+
 // Create wrapper for spinboxes. Function is analogous to AMAmpComboBox
 // SpinBox was used instead of DefaultGUILineEdit because palette.setBrush(etc...) 
 // doesn't change colors when changes are done programmatically. 
@@ -62,14 +77,23 @@ static DefaultGUIModel::variable_t vars[] = {
 	{ "Mode Bit 1", "Bit 1 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 2", "Bit 2 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 4", "Bit 4 of signal sent to amplfier", DefaultGUIModel::OUTPUT, },
-	{ "Input Channel", "Input channel to scale (#)", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, }, 
-	{ "Output Channel", "Output channel to scale (#)", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
-	{ "Amplifier Mode", "Mode to telegraph to amplifier", DefaultGUIModel::PARAMETER | DefaultGUIModel::INTEGER, },
+	{ "Input Channel", "Input channel to scale (#)", DefaultGUIModel::PARAMETER | 
+	  DefaultGUIModel::INTEGER, }, 
+	{ "Output Channel", "Output channel to scale (#)", DefaultGUIModel::PARAMETER | 
+	  DefaultGUIModel::INTEGER, },
+	{ "Amplifier Mode", "Mode to telegraph to amplifier", DefaultGUIModel::PARAMETER | 
+	  DefaultGUIModel::INTEGER, },
+	{ "Amplifier Mode Offset", 
+	  "Offset the amplifier scaling (entered manually or computed based on current amplifier mode)",
+	   DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE, },
 };
 
 static size_t num_vars = sizeof(vars) / sizeof(DefaultGUIModel::variable_t);
 
-// Definition of global function used to get all DAQ devices available. Copied from legacy version of program. -Ansel
+/*
+ * Definition of global function used to get all DAQ devices available to the analogy driver. 
+ * Copied from legacy version of program.
+ */
 static void getDevice(DAQ::Device *d, void *p) {
 	DAQ::Device **device = reinterpret_cast<DAQ::Device **>(p);
 
@@ -93,6 +117,7 @@ void AMAmp::initParameters(void) {
 	input_channel = 0;
 	output_channel = 0;
 	amp_mode = 2;
+	amp_offset = 0;
 
 	device = 0;
 	DAQ::Manager::getInstance()->foreachDevice(getDevice, &device);
@@ -115,11 +140,13 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			setParameter("Input Channel", input_channel);
 			setParameter("Output Channel", output_channel);
 			setParameter("Amplifier Mode", amp_mode);
+			setParameter("Amplifier Mode Offset", amp_offset);
 
 			inputBox->setValue(input_channel);
 			outputBox->setValue(output_channel);
 			ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
 			ampButtonGroup->button(amp_mode)->setChecked(true);
+			offsetEdit->setText(QString::number(amp_offset));
 			break;
 		
 		case MODIFY:
@@ -134,11 +161,14 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 				amp_mode = getParameter("Amplifier Mode").toInt();
 			}
 
+			amp_offset = getParameter("Amplifier Mode Offset").toDouble();
+
 			updateDAQ();
 
 			// blacken the GUI to reflect that changes have been saved to variables.
 			inputBox->blacken();
 			outputBox->blacken();
+			offsetEdit->blacken();
 			break;
 
 		default:
@@ -152,7 +182,7 @@ void AMAmp::updateMode(int value) {
 	parameter["Amplifier Mode"].edit->setModified(true);
 
 //	update( MODIFY );
-	modify();
+//	modify();
 	return;
 }
 
@@ -278,6 +308,16 @@ void AMAmp::updateDAQ(void) {
 	}
 };
 
+void AMAmp::setOffset(const QString &text) {
+//	amp_offset = (offsetEdit->text()).toDouble();
+	parameter["Amplifier Mode Offset"].edit->setText(text);
+	parameter["Amplifier Mode Offset"].edit->setModified(true);
+}
+
+void AMAmp::updateOffset(void) {
+
+}
+
 /* 
  * Sets up the GUI. It's a bit messy. These are the important things to remember:
  *   1. The parameter/state block created by DefaultGUIModel is HIDDEN. 
@@ -290,25 +330,49 @@ void AMAmp::updateDAQ(void) {
 void AMAmp::customizeGUI(void) {
 	QGridLayout *customLayout = DefaultGUIModel::getLayout();
 	
-	customLayout->itemAtPosition(1,0)->widget()->setVisible(false);
+//	customLayout->itemAtPosition(1,0)->widget()->setVisible(false);
 	DefaultGUIModel::pauseButton->setVisible(false);
 	DefaultGUIModel::modifyButton->setText("Set DAQ");
 	DefaultGUIModel::unloadButton->setVisible(false);
 
 	// create input spinboxes
+	QGroupBox *ioGroupBox = new QGroupBox("Channels");
+	QVBoxLayout *ioGroupLayout = new QVBoxLayout;
+	ioGroupBox->setLayout(ioGroupLayout);
+
 	QFormLayout *ioBoxLayout = new QFormLayout;
-	inputBox = new AMAmpSpinBox; // this is the QSpinBox wrapper made earlier
-	inputBox->setRange(0,100);
-	outputBox = new AMAmpSpinBox;
-	outputBox->setRange(0,100);
 	
 	QLabel *inputBoxLabel = new QLabel("Input");
+	inputBox = new AMAmpSpinBox; // this is the QSpinBox wrapper made earlier
+	inputBox->setRange(0,100);
+
 	QLabel *outputBoxLabel = new QLabel("Output");
+	outputBox = new AMAmpSpinBox;
+	outputBox->setRange(0,100);
+
 	ioBoxLayout->addRow(inputBoxLabel, inputBox);
 	ioBoxLayout->addRow(outputBoxLabel, outputBox);
 
+	ioGroupLayout->addLayout(ioBoxLayout);
+
 	// create amp mode groupbox
-	QVBoxLayout *ampModeBoxLayout = new QVBoxLayout;
+
+	QGroupBox *ampModeGroupBox = new QGroupBox("Amp Mode");
+//	QVBoxLayout *ampModeGroupLayout = new QVBoxLayout;
+	QGridLayout *ampModeGroupLayout = new QGridLayout;
+	ampModeGroupBox->setLayout(ampModeGroupLayout);
+	
+	QHBoxLayout *offsetLayout = new QHBoxLayout;
+//	QFormLayout *offsetLayout = new QFormLayout;
+	QLabel *offsetLabel = new QLabel("Offset");
+	offsetLayout->addWidget(offsetLabel);
+	offsetEdit = new AMAmpLineEdit();
+	offsetEdit->setValidator( new QDoubleValidator(offsetEdit) );
+	offsetLayout->addWidget(offsetEdit);
+	ampModeGroupLayout->addLayout(offsetLayout, 0, 0);
+
+//	QVBoxLayout *ampModeBoxLayout = new QVBoxLayout;
+//	QGridLayout *ampModeBoxLayout = new QGridLayout;
 
 	// make the buttons
 	ampButtonGroup = new QButtonGroup;
@@ -327,7 +391,26 @@ void AMAmp::customizeGUI(void) {
 	ifollowButton = new QRadioButton("IFollow");
 	ampButtonGroup->addButton(ifollowButton, 7);
 
+	ampModeGroupLayout->addWidget(vclampButton, 1, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(izeroButton, 2, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(iclampButton, 3, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(vcompButton, 4, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(vtestButton, 5, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(iresistButton, 6, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(ifollowButton, 7, 0, Qt::AlignCenter);
+
+/*	
+	ampModeGroupLayout->addWidget(vclampButton);
+	ampModeGroupLayout->addWidget(izeroButton);
+	ampModeGroupLayout->addWidget(iclampButton);
+	ampModeGroupLayout->addWidget(vcompButton);
+	ampModeGroupLayout->addWidget(vtestButton);
+	ampModeGroupLayout->addWidget(iresistButton);
+	ampModeGroupLayout->addWidget(ifollowButton);
+*/
+
 	// make the offset edit boxes
+/*
 	QHBoxLayout *vclampGroup = new QHBoxLayout;
 	QHBoxLayout *izeroGroup = new QHBoxLayout;
 	QHBoxLayout *iclampGroup = new QHBoxLayout;
@@ -335,15 +418,38 @@ void AMAmp::customizeGUI(void) {
 	QHBoxLayout *vtestGroup = new QHBoxLayout;
 	QHBoxLayout *iresistGroup = new QHBoxLayout;
 	QHBoxLayout *ifollowGroup = new QHBoxLayout;
+*/
 
+/*
 	vclampEdit = new QLineEdit();
+	vclampEdit->setValidator( new QDoubleValidator(vclampEdit) );
+	vclampEdit->setToolTip("VClamp mode offset");
 	izeroEdit = new QLineEdit();
 	iclampEdit = new QLineEdit();
 	vcompEdit = new QLineEdit();
 	vtestEdit = new QLineEdit();
 	iresistEdit = new QLineEdit();
 	ifollowEdit = new QLineEdit();
+*/
 
+/*
+	ampModeBoxLayout->addWidget(vclampButton, 0, 0);
+	ampModeBoxLayout->addWidget(vclampEdit, 0, 1);
+	ampModeBoxLayout->addWidget(izeroButton, 1, 0);
+	ampModeBoxLayout->addWidget(izeroEdit, 1, 1);
+	ampModeBoxLayout->addWidget(iclampButton, 2, 0);
+	ampModeBoxLayout->addWidget(iclampEdit, 2, 1);
+	ampModeBoxLayout->addWidget(vcompButton, 3, 0);
+	ampModeBoxLayout->addWidget(vcompEdit, 3, 1);
+	ampModeBoxLayout->addWidget(vtestButton, 4, 0);
+	ampModeBoxLayout->addWidget(vtestEdit, 4, 1);
+	ampModeBoxLayout->addWidget(iresistButton, 5, 0);
+	ampModeBoxLayout->addWidget(iresistEdit, 5, 1);
+	ampModeBoxLayout->addWidget(ifollowButton, 6, 0);
+	ampModeBoxLayout->addWidget(ifollowEdit, 6, 1);
+*/
+
+/*
 	vclampGroup->addWidget(vclampButton);
 	vclampGroup->addWidget(vclampEdit);
 	izeroGroup->addWidget(izeroButton);
@@ -366,14 +472,58 @@ void AMAmp::customizeGUI(void) {
 	ampModeBoxLayout->addLayout(vtestGroup);
 	ampModeBoxLayout->addLayout(iresistGroup);
 	ampModeBoxLayout->addLayout(ifollowGroup);
+*/
 
 	// add widgets to custom layout
-	customLayout->addLayout(ioBoxLayout, 0, 0);
-	customLayout->addLayout(ampModeBoxLayout, 2, 0, Qt::AlignCenter);
+//	customLayout->addLayout(ioBoxLayout, 0, 0);
+	customLayout->addWidget(ioGroupBox, 0, 0);
+//	customLayout->addLayout(ampModeBoxLayout, 2, 0, Qt::AlignCenter);
+	customLayout->addWidget(ampModeGroupBox, 2, 0);
 	setLayout(customLayout);
 
 	// connect the widgets to the signals
 	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateMode(int)));
 	QObject::connect(inputBox, SIGNAL(valueChanged(int)), this, SLOT(updateInputChannel(int)));
 	QObject::connect(outputBox, SIGNAL(valueChanged(int)), this, SLOT(updateOutputChannel(int)));
+//	QObject::connect(offsetEdit, SIGNAL(returnPressed(void)), offsetEdit, SLOT(blacken(void)));
+	QObject::connect(offsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setOffset(const QString &)));
+}
+
+void AMAmp::doSave(Settings::Object::State &s) const {
+	s.saveInteger("paused", pauseButton->isChecked());
+	if (isMaximized()) s.saveInteger("Maximized", 1);
+	else if (isMinimized()) s.saveInteger("Minimized", 1);
+
+	QPoint pos = parentWidget()->pos();
+	s.saveInteger("X", pos.x());
+	s.saveInteger("Y", pos.y());
+	s.saveInteger("W", width());
+	s.saveInteger("H", height());
+
+	for (std::map<QString, param_t>::const_iterator i = parameter.begin(); i != parameter.end(); ++i) {
+		s.saveString((i->first).toStdString(), (i->second.edit->text()).toStdString());
+	}
+}
+
+void AMAmp::doLoad(const Settings::Object::State &s) {
+	for (std::map<QString, param_t>::iterator i = parameter.begin(); i != parameter.end(); ++i)
+		i->second.edit->setText(QString::fromStdString(s.loadString((i->first).toStdString())));
+
+	if (s.loadInteger("Maximized")) showMaximized();
+	else if (s.loadInteger("Minimized")) showMinimized();
+
+	// this only exists in RTXI versions >1.3
+	if (s.loadInteger("W") != NULL) {
+		resize(s.loadInteger("W"), s.loadInteger("H"));
+		parentWidget()->move(s.loadInteger("X"), s.loadInteger("Y"));
+	}
+
+	pauseButton->setChecked(s.loadInteger("paused"));
+	modify();
+
+	inputBox->setValue(input_channel);
+	outputBox->setValue(output_channel);
+	ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
+	ampButtonGroup->button(amp_mode)->setChecked(true);
+	offsetEdit->setText(QString::number(amp_offset));
 }
