@@ -83,7 +83,10 @@ static DefaultGUIModel::variable_t vars[] = {
 	  DefaultGUIModel::INTEGER, },
 	{ "Amplifier Mode", "Mode to telegraph to amplifier", DefaultGUIModel::PARAMETER | 
 	  DefaultGUIModel::INTEGER, },
-	{ "Amplifier Mode Offset", 
+	{ "AI Offset", 
+	  "Offset the amplifier scaling (entered manually or computed based on current amplifier mode)",
+	   DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE, },
+	{ "AO Offset", 
 	  "Offset the amplifier scaling (entered manually or computed based on current amplifier mode)",
 	   DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE, },
 };
@@ -117,7 +120,8 @@ void AMAmp::initParameters(void) {
 	input_channel = 0;
 	output_channel = 0;
 	amp_mode = 2;
-	amp_offset = 0;
+	ai_offset = 0; 
+	ao_offset = 0;
 
 	device = 0;
 	DAQ::Manager::getInstance()->foreachDevice(getDevice, &device);
@@ -140,13 +144,15 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			setParameter("Input Channel", input_channel);
 			setParameter("Output Channel", output_channel);
 			setParameter("Amplifier Mode", amp_mode);
-			setParameter("Amplifier Mode Offset", amp_offset);
+			setParameter("AI Offset", ai_offset);
+			setParameter("AO Offset", ao_offset);
 
 			inputBox->setValue(input_channel);
 			outputBox->setValue(output_channel);
 			ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
 			ampButtonGroup->button(amp_mode)->setChecked(true);
-			offsetEdit->setText(QString::number(amp_offset));
+			aiOffsetEdit->setText(QString::number(ai_offset));
+			aoOffsetEdit->setText(QString::number(ao_offset));
 			break;
 		
 		case MODIFY:
@@ -161,14 +167,16 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 				amp_mode = getParameter("Amplifier Mode").toInt();
 			}
 
-			amp_offset = getParameter("Amplifier Mode Offset").toDouble();
+			ai_offset = getParameter("AI Offset").toDouble();
+			ao_offset = getParameter("AO Offset").toDouble();
 
 			updateDAQ();
 
 			// blacken the GUI to reflect that changes have been saved to variables.
 			inputBox->blacken();
 			outputBox->blacken();
-			offsetEdit->blacken();
+			aiOffsetEdit->blacken();
+			aoOffsetEdit->blacken();
 			break;
 
 		default:
@@ -180,9 +188,6 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 void AMAmp::updateMode(int value) {
 	parameter["Amplifier Mode"].edit->setText(QString::number(value));
 	parameter["Amplifier Mode"].edit->setModified(true);
-
-//	update( MODIFY );
-//	modify();
 	return;
 }
 
@@ -207,9 +212,9 @@ void AMAmp::updateDAQ(void) {
 		case 1: // VClamp
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
-				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -221,9 +226,9 @@ void AMAmp::updateDAQ(void) {
 		case 2: // I = 0
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain + ao_offset); // this may be a horrible mistake
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -235,9 +240,9 @@ void AMAmp::updateDAQ(void) {
 		case 3: // IClamp
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -249,9 +254,9 @@ void AMAmp::updateDAQ(void) {
 		case 4: // VComp
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
-				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -263,9 +268,9 @@ void AMAmp::updateDAQ(void) {
 		case 5: // VTest
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
-				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -277,9 +282,9 @@ void AMAmp::updateDAQ(void) {
 		case 6: // IResist
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -291,9 +296,9 @@ void AMAmp::updateDAQ(void) {
 		case 7: // IFollow
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -308,14 +313,130 @@ void AMAmp::updateDAQ(void) {
 	}
 };
 
-void AMAmp::setOffset(const QString &text) {
-//	amp_offset = (offsetEdit->text()).toDouble();
-	parameter["Amplifier Mode Offset"].edit->setText(text);
-	parameter["Amplifier Mode Offset"].edit->setModified(true);
+void AMAmp::setAIOffset(const QString &text) {
+	parameter["AI Offset"].edit->setText(text);
+	parameter["AI Offset"].edit->setModified(true);
 }
 
-void AMAmp::updateOffset(void) {
+void AMAmp::setAOOffset(const QString &text) {
+	parameter["AO Offset"].edit->setText(text);
+	parameter["AO Offset"].edit->setModified(true);
+}
 
+void AMAmp::updateOffset(int new_mode) {
+	double scaled_ai_offset = ai_offset;
+	double scaled_ao_offset = ao_offset;
+
+	switch(amp_mode) {
+	case 1: // VClamp
+		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
+		break;
+
+	case 2: // I = 0
+		scaled_ai_offset = scaled_ai_offset / izero_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / izero_ao_gain;
+		break;
+
+	case 3: // IClamp
+		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
+		break;
+
+	case 4: // VComp
+		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
+		break;
+
+	case 5: // VTest
+		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
+		break;
+
+	case 6: // IResist
+		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
+		break;
+
+	case 7: // IFollow
+		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
+		break;
+
+	default:
+		std::cout<<"ERROR. Something went horribly wrong.\n The amplifier mode is set to an unknown value"<<std::endl;
+		break;
+	}
+
+	switch(new_mode) {
+	case 1: // VClamp
+		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
+
+		aiOffsetUnits->setText("1 mV/pA");
+		aoOffsetUnits->setText("20 mV/V");
+		break;
+
+	case 2: // I = 0
+		scaled_ai_offset = scaled_ai_offset * izero_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * izero_ao_gain;
+
+		aiOffsetUnits->setText("1 V/V");
+		aoOffsetUnits->setText("---");
+		break;
+
+	case 3: // IClamp
+		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
+
+		aiOffsetUnits->setText("1 V/V");
+		aoOffsetUnits->setText("2 nA/V");
+		break;
+
+	case 4: // VComp
+		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
+
+		aiOffsetUnits->setText("1 mV/pA");
+		aoOffsetUnits->setText("20 mV/V");
+		break;
+
+	case 5: // VTest
+		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
+
+		aiOffsetUnits->setText("1 mV/pA");
+		aoOffsetUnits->setText("20 mV/V");
+		break;
+
+	case 6: // IResist
+		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
+
+		aiOffsetUnits->setText("1 V/V");
+		aoOffsetUnits->setText("2 nA/V");
+		break;
+
+	case 7: // IFollow
+		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
+
+		aiOffsetUnits->setText("1 V/V");
+		aoOffsetUnits->setText("2 nA/V");
+		break;
+
+	default:
+		std::cout<<"ERROR. Something went horribly wrong.\n The amplifier mode is set to an unknown value"<<std::endl;
+		break;
+	}
+
+	parameter["AI Offset"].edit->setText(QString::number(scaled_ai_offset));
+	parameter["AI Offset"].edit->setModified(true);
+	parameter["AO Offset"].edit->setText(QString::number(scaled_ao_offset));
+	parameter["AO Offset"].edit->setModified(true);
+	
+	aiOffsetEdit->setText(QString::number(scaled_ai_offset));
+	aoOffsetEdit->setText(QString::number(scaled_ao_offset));
 }
 
 /* 
@@ -330,45 +451,78 @@ void AMAmp::updateOffset(void) {
 void AMAmp::customizeGUI(void) {
 	QGridLayout *customLayout = DefaultGUIModel::getLayout();
 	
-//	customLayout->itemAtPosition(1,0)->widget()->setVisible(false);
+	customLayout->itemAtPosition(1,0)->widget()->setVisible(false);
 	DefaultGUIModel::pauseButton->setVisible(false);
 	DefaultGUIModel::modifyButton->setText("Set DAQ");
 	DefaultGUIModel::unloadButton->setVisible(false);
 
 	// create input spinboxes
 	QGroupBox *ioGroupBox = new QGroupBox("Channels");
-	QVBoxLayout *ioGroupLayout = new QVBoxLayout;
+	QGridLayout *ioGroupLayout = new QGridLayout;
+//	ioGroupLayout->setColumnStretch(0, 1);
+//	QVBoxLayout *ioGroupLayout = new QVBoxLayout;
 	ioGroupBox->setLayout(ioGroupLayout);
 
-	QFormLayout *ioBoxLayout = new QFormLayout;
+//	QFormLayout *ioBoxLayout = new QFormLayout;
 	
 	QLabel *inputBoxLabel = new QLabel("Input");
 	inputBox = new AMAmpSpinBox; // this is the QSpinBox wrapper made earlier
 	inputBox->setRange(0,100);
+	ioGroupLayout->addWidget(inputBoxLabel, 0, 0);
+	ioGroupLayout->addWidget(inputBox, 0, 1);
 
 	QLabel *outputBoxLabel = new QLabel("Output");
 	outputBox = new AMAmpSpinBox;
 	outputBox->setRange(0,100);
+	ioGroupLayout->addWidget(outputBoxLabel, 1, 0);
+	ioGroupLayout->addWidget(outputBox, 1, 1);
 
-	ioBoxLayout->addRow(inputBoxLabel, inputBox);
-	ioBoxLayout->addRow(outputBoxLabel, outputBox);
+//	ioBoxLayout->addRow(inputBoxLabel, inputBox);
+//	ioBoxLayout->addRow(outputBoxLabel, outputBox);
 
-	ioGroupLayout->addLayout(ioBoxLayout);
+//	ioGroupLayout->addLayout(ioBoxLayout);
 
 	// create amp mode groupbox
-
 	QGroupBox *ampModeGroupBox = new QGroupBox("Amp Mode");
 //	QVBoxLayout *ampModeGroupLayout = new QVBoxLayout;
 	QGridLayout *ampModeGroupLayout = new QGridLayout;
 	ampModeGroupBox->setLayout(ampModeGroupLayout);
+
+	QGridLayout *offsetLayout = new QGridLayout;
+	offsetLayout->setColumnStretch(0, 1);
+//	QGridLayout *aiOffsetLayout = new QGridLayout;
+//	aiOffsetLayout->setColumnStretch(0,1);
+//	QHBoxLayout *aiOffsetLayout = new QHBoxLayout;
+//	QFormLayout *aiOffsetLayout = new QFormLayout;
+	QLabel *aiOffsetLabel = new QLabel("AI Offset:");
+//	aiOffsetLayout->addWidget(aiOffsetLabel, 0, 0);
+	offsetLayout->addWidget(aiOffsetLabel, 0, 0);
+	aiOffsetEdit = new AMAmpLineEdit();
+	aiOffsetEdit->resize(aiOffsetEdit->minimumSizeHint());
+	aiOffsetEdit->setValidator( new QDoubleValidator(aiOffsetEdit) );
+//	aiOffsetLayout->addWidget(aiOffsetEdit, 0, 1);
+	offsetLayout->addWidget(aiOffsetEdit, 0, 1);
+	aiOffsetUnits = new QLabel("1 V/V");
+//	aiOffsetLayout->addWidget(aiOffsetUnits, 0, 2);
+	offsetLayout->addWidget(aiOffsetUnits, 0, 2, Qt::AlignCenter);
+//	ampModeGroupLayout->addLayout(aiOffsetLayout, 0, 0);
 	
-	QHBoxLayout *offsetLayout = new QHBoxLayout;
-//	QFormLayout *offsetLayout = new QFormLayout;
-	QLabel *offsetLabel = new QLabel("Offset");
-	offsetLayout->addWidget(offsetLabel);
-	offsetEdit = new AMAmpLineEdit();
-	offsetEdit->setValidator( new QDoubleValidator(offsetEdit) );
-	offsetLayout->addWidget(offsetEdit);
+//	QGridLayout *aoOffsetLayout = new QGridLayout;
+//	aoOffsetLayout->setColumnStretch(0,1);
+//	QHBoxLayout *aoOffsetLayout = new QHBoxLayout;
+//	QFormLayout *aoOffsetLayout = new QFormLayout;
+	QLabel *aoOffsetLabel = new QLabel("AO Offset:");
+//	aoOffsetLayout->addWidget(aoOffsetLabel, 0, 0);
+	offsetLayout->addWidget(aoOffsetLabel, 1, 0);
+	aoOffsetEdit = new AMAmpLineEdit();
+	aoOffsetEdit->resize(aoOffsetEdit->minimumSizeHint());
+	aoOffsetEdit->setValidator( new QDoubleValidator(aoOffsetEdit) );
+//	aoOffsetLayout->addWidget(aoOffsetEdit, 0, 1);
+	offsetLayout->addWidget(aoOffsetEdit, 1, 1);
+	aoOffsetUnits = new QLabel("---");
+//	aoOffsetLayout->addWidget(aoOffsetUnits, 0, 2);
+	offsetLayout->addWidget(aoOffsetUnits, 1, 2, Qt::AlignCenter);
+//	ampModeGroupLayout->addLayout(aoOffsetLayout, 1, 0);
 	ampModeGroupLayout->addLayout(offsetLayout, 0, 0);
 
 //	QVBoxLayout *ampModeBoxLayout = new QVBoxLayout;
@@ -391,13 +545,13 @@ void AMAmp::customizeGUI(void) {
 	ifollowButton = new QRadioButton("IFollow");
 	ampButtonGroup->addButton(ifollowButton, 7);
 
-	ampModeGroupLayout->addWidget(vclampButton, 1, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(izeroButton, 2, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(iclampButton, 3, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(vcompButton, 4, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(vtestButton, 5, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(iresistButton, 6, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(ifollowButton, 7, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(vclampButton, 2, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(izeroButton, 3, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(iclampButton, 4, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(vcompButton, 5, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(vtestButton, 6, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(iresistButton, 7, 0, Qt::AlignCenter);
+	ampModeGroupLayout->addWidget(ifollowButton, 8, 0, Qt::AlignCenter);
 
 /*	
 	ampModeGroupLayout->addWidget(vclampButton);
@@ -483,10 +637,12 @@ void AMAmp::customizeGUI(void) {
 
 	// connect the widgets to the signals
 	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateMode(int)));
+	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateOffset(int)));
 	QObject::connect(inputBox, SIGNAL(valueChanged(int)), this, SLOT(updateInputChannel(int)));
 	QObject::connect(outputBox, SIGNAL(valueChanged(int)), this, SLOT(updateOutputChannel(int)));
 //	QObject::connect(offsetEdit, SIGNAL(returnPressed(void)), offsetEdit, SLOT(blacken(void)));
-	QObject::connect(offsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setOffset(const QString &)));
+	QObject::connect(aiOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAIOffset(const QString &)));
+	QObject::connect(aoOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAOOffset(const QString &)));
 }
 
 void AMAmp::doSave(Settings::Object::State &s) const {
@@ -525,5 +681,6 @@ void AMAmp::doLoad(const Settings::Object::State &s) {
 	outputBox->setValue(output_channel);
 	ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
 	ampButtonGroup->button(amp_mode)->setChecked(true);
-	offsetEdit->setText(QString::number(amp_offset));
+	aiOffsetEdit->setText(QString::number(ai_offset));
+	aoOffsetEdit->setText(QString::number(ao_offset));
 }

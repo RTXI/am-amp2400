@@ -70,7 +70,6 @@ class AMAmp : public DefaultGUIModel {
 		void customizeGUI(void);
 		void updateDAQ(void);
 		void updateGUI(void);
-//		void setOffset(void);
 	
 	protected:
 		virtual void update(DefaultGUIModel::update_flags_t);
@@ -83,6 +82,8 @@ class AMAmp : public DefaultGUIModel {
 		double vclamp_ai_gain; // 1 mV / pA
 		double vclamp_ao_gain; // 20 mV / V
 
+		double ai_offset, ao_offset;
+
 /*
 		double iclamp_offset, vclamp_offset, izero_offset, vcomp_offset,
 		       vtest_offset, iresist_offset, ifollow_offset;
@@ -90,7 +91,6 @@ class AMAmp : public DefaultGUIModel {
 
 		int input_channel, output_channel;
 		int amp_mode, temp_mode;
-		double amp_offset;
 
 		DAQ::Device *device;
 	
@@ -103,14 +103,16 @@ class AMAmp : public DefaultGUIModel {
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
 		AMAmpComboBox *headstageBox, *outputGainBox;
-		AMAmpLineEdit *offsetEdit;
+		AMAmpLineEdit *aiOffsetEdit, *aoOffsetEdit;
+		QLabel *aiOffsetUnits, *aoOffsetUnits;
 
 		void doSave(Settings::Object::State &) const;
 		void doLoad(const Settings::Object::State &);
 
 	private slots:
-		void setOffset(const QString &);
-		void updateOffset(void);
+		void setAIOffset(const QString &);
+		void setAOOffset(const QString &);
+		void updateOffset(int);
 		void updateMode(int);
 		void updateInputChannel(int);
 		void updateOutputChannel(int);
