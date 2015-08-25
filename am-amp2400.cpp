@@ -487,7 +487,7 @@ void AMAmp::customizeGUI(void) {
 	QLabel *aiOffsetLabel = new QLabel("AI Offset:");
 	offsetLayout->addWidget(aiOffsetLabel, 0, 0);
 	aiOffsetEdit = new AMAmpLineEdit();
-	aiOffsetEdit->resize(aiOffsetEdit->minimumSizeHint());
+	aiOffsetEdit->setMaximumWidth(aiOffsetEdit->minimumSizeHint().width()*3);
 	aiOffsetEdit->setValidator( new QDoubleValidator(aiOffsetEdit) );
 	offsetLayout->addWidget(aiOffsetEdit, 0, 1);
 	aiOffsetUnits = new QLabel("1 V/V");
@@ -496,7 +496,7 @@ void AMAmp::customizeGUI(void) {
 	QLabel *aoOffsetLabel = new QLabel("AO Offset:");
 	offsetLayout->addWidget(aoOffsetLabel, 1, 0);
 	aoOffsetEdit = new AMAmpLineEdit();
-	aoOffsetEdit->resize(aoOffsetEdit->minimumSizeHint());
+	aoOffsetEdit->setMaximumWidth(aoOffsetEdit->minimumSizeHint().width()*3);
 	aoOffsetEdit->setValidator( new QDoubleValidator(aoOffsetEdit) );
 	offsetLayout->addWidget(aoOffsetEdit, 1, 1);
 	aoOffsetUnits = new QLabel("---");
@@ -520,6 +520,17 @@ void AMAmp::customizeGUI(void) {
 	ifollowButton = new QRadioButton("IFollow");
 	ampButtonGroup->addButton(ifollowButton, 7);
 
+	QGridLayout *ampButtonGroupLayout = new QGridLayout;
+	ampButtonGroupLayout->addWidget(vclampButton, 0, 0);
+	ampButtonGroupLayout->addWidget(izeroButton, 0, 1);
+	ampButtonGroupLayout->addWidget(iclampButton, 1, 0);
+	ampButtonGroupLayout->addWidget(vcompButton, 1, 1);
+	ampButtonGroupLayout->addWidget(vtestButton, 2, 0);
+	ampButtonGroupLayout->addWidget(iresistButton, 2, 1);
+	ampButtonGroupLayout->addWidget(ifollowButton, 3, 0);
+
+	ampModeGroupLayout->addLayout(ampButtonGroupLayout, 2, 0);
+/*
 	ampModeGroupLayout->addWidget(vclampButton, 2, 0, Qt::AlignCenter);
 	ampModeGroupLayout->addWidget(izeroButton, 3, 0, Qt::AlignCenter);
 	ampModeGroupLayout->addWidget(iclampButton, 4, 0, Qt::AlignCenter);
@@ -527,6 +538,7 @@ void AMAmp::customizeGUI(void) {
 	ampModeGroupLayout->addWidget(vtestButton, 6, 0, Qt::AlignCenter);
 	ampModeGroupLayout->addWidget(iresistButton, 7, 0, Qt::AlignCenter);
 	ampModeGroupLayout->addWidget(ifollowButton, 8, 0, Qt::AlignCenter);
+*/
 
 	// add widgets to custom layout
 	customLayout->addWidget(ioGroupBox, 0, 0);
