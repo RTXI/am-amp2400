@@ -18,6 +18,7 @@
 #include <iostream>
 #include "am-amp2400.h"
 
+/*
 // Create wrapper for QComboBox. Options go red when changed and black when 'Set DAQ' is hit.
 AMAmpComboBox::AMAmpComboBox(QWidget *parent) : QComboBox(parent) {
 	QObject::connect(this, SIGNAL(activated(int)), this, SLOT(redden(void)));
@@ -32,6 +33,7 @@ void AMAmpComboBox::blacken(void) {
 void AMAmpComboBox::redden(void) {
 	this->setStyleSheet("QComboBox { color:red; }");
 }
+*/
 
 // Create wrapper for QLineEdit. Options go red when changed and black when 'Set DAQ' is hit.
 AMAmpLineEdit::AMAmpLineEdit(QWidget *parent) : QLineEdit(parent) {

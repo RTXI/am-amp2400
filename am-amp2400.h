@@ -31,6 +31,7 @@ class AMAmpLineEdit : public QLineEdit {
 		void redden(void);
 };
 
+/*
 class AMAmpComboBox : public QComboBox {
 
 	Q_OBJECT
@@ -43,6 +44,7 @@ class AMAmpComboBox : public QComboBox {
 	public slots:
 		void redden(void);
 };
+*/
 
 class AMAmpSpinBox : public QSpinBox {
 
@@ -102,7 +104,7 @@ class AMAmp : public DefaultGUIModel {
 */
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
-		AMAmpComboBox *headstageBox, *outputGainBox;
+//		AMAmpComboBox *headstageBox, *outputGainBox;
 		AMAmpLineEdit *aiOffsetEdit, *aoOffsetEdit;
 		QLabel *aiOffsetUnits, *aoOffsetUnits;
 
