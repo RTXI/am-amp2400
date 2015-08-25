@@ -50,9 +50,11 @@ void AMAmpLineEdit::redden(void) {
 	this->setStyleSheet("QLineEdit { color:red; }");
 }
 
-// Create wrapper for spinboxes. Function is analogous to AMAmpComboBox
-// SpinBox was used instead of DefaultGUILineEdit because palette.setBrush(etc...) 
-// doesn't change colors when changes are done programmatically. 
+/*
+ * Create wrapper for spinboxes. Function is analogous to AMAmpComboBox
+ * SpinBox was used instead of DefaultGUILineEdit because palette.setBrush(etc...) 
+ * doesn't change colors when changes are done programmatically. 
+ */
 AMAmpSpinBox::AMAmpSpinBox(QWidget *parent) : QSpinBox(parent) {
 	QObject::connect(this, SIGNAL(valueChanged(int)), this, SLOT(redden(void)));
 }
@@ -69,7 +71,7 @@ void AMAmpSpinBox::redden(void) {
 
 
 /* 
- * This is the real deal, the definitions for all the AMAmp functions.
+ * This is the real deal.
  */
 extern "C" Plugin::Object * createRTXIPlugin(void) {
 	return new AMAmp();
@@ -461,12 +463,8 @@ void AMAmp::customizeGUI(void) {
 	// create input spinboxes
 	QGroupBox *ioGroupBox = new QGroupBox("Channels");
 	QGridLayout *ioGroupLayout = new QGridLayout;
-//	ioGroupLayout->setColumnStretch(0, 1);
-//	QVBoxLayout *ioGroupLayout = new QVBoxLayout;
 	ioGroupBox->setLayout(ioGroupLayout);
 
-//	QFormLayout *ioBoxLayout = new QFormLayout;
-	
 	QLabel *inputBoxLabel = new QLabel("Input");
 	inputBox = new AMAmpSpinBox; // this is the QSpinBox wrapper made earlier
 	inputBox->setRange(0,100);
@@ -479,56 +477,31 @@ void AMAmp::customizeGUI(void) {
 	ioGroupLayout->addWidget(outputBoxLabel, 1, 0);
 	ioGroupLayout->addWidget(outputBox, 1, 1);
 
-//	ioBoxLayout->addRow(inputBoxLabel, inputBox);
-//	ioBoxLayout->addRow(outputBoxLabel, outputBox);
-
-//	ioGroupLayout->addLayout(ioBoxLayout);
-
 	// create amp mode groupbox
 	QGroupBox *ampModeGroupBox = new QGroupBox("Amp Mode");
-//	QVBoxLayout *ampModeGroupLayout = new QVBoxLayout;
 	QGridLayout *ampModeGroupLayout = new QGridLayout;
 	ampModeGroupBox->setLayout(ampModeGroupLayout);
 
 	QGridLayout *offsetLayout = new QGridLayout;
 	offsetLayout->setColumnStretch(0, 1);
-//	QGridLayout *aiOffsetLayout = new QGridLayout;
-//	aiOffsetLayout->setColumnStretch(0,1);
-//	QHBoxLayout *aiOffsetLayout = new QHBoxLayout;
-//	QFormLayout *aiOffsetLayout = new QFormLayout;
 	QLabel *aiOffsetLabel = new QLabel("AI Offset:");
-//	aiOffsetLayout->addWidget(aiOffsetLabel, 0, 0);
 	offsetLayout->addWidget(aiOffsetLabel, 0, 0);
 	aiOffsetEdit = new AMAmpLineEdit();
 	aiOffsetEdit->resize(aiOffsetEdit->minimumSizeHint());
 	aiOffsetEdit->setValidator( new QDoubleValidator(aiOffsetEdit) );
-//	aiOffsetLayout->addWidget(aiOffsetEdit, 0, 1);
 	offsetLayout->addWidget(aiOffsetEdit, 0, 1);
 	aiOffsetUnits = new QLabel("1 V/V");
-//	aiOffsetLayout->addWidget(aiOffsetUnits, 0, 2);
 	offsetLayout->addWidget(aiOffsetUnits, 0, 2, Qt::AlignCenter);
-//	ampModeGroupLayout->addLayout(aiOffsetLayout, 0, 0);
 	
-//	QGridLayout *aoOffsetLayout = new QGridLayout;
-//	aoOffsetLayout->setColumnStretch(0,1);
-//	QHBoxLayout *aoOffsetLayout = new QHBoxLayout;
-//	QFormLayout *aoOffsetLayout = new QFormLayout;
 	QLabel *aoOffsetLabel = new QLabel("AO Offset:");
-//	aoOffsetLayout->addWidget(aoOffsetLabel, 0, 0);
 	offsetLayout->addWidget(aoOffsetLabel, 1, 0);
 	aoOffsetEdit = new AMAmpLineEdit();
 	aoOffsetEdit->resize(aoOffsetEdit->minimumSizeHint());
 	aoOffsetEdit->setValidator( new QDoubleValidator(aoOffsetEdit) );
-//	aoOffsetLayout->addWidget(aoOffsetEdit, 0, 1);
 	offsetLayout->addWidget(aoOffsetEdit, 1, 1);
 	aoOffsetUnits = new QLabel("---");
-//	aoOffsetLayout->addWidget(aoOffsetUnits, 0, 2);
 	offsetLayout->addWidget(aoOffsetUnits, 1, 2, Qt::AlignCenter);
-//	ampModeGroupLayout->addLayout(aoOffsetLayout, 1, 0);
 	ampModeGroupLayout->addLayout(offsetLayout, 0, 0);
-
-//	QVBoxLayout *ampModeBoxLayout = new QVBoxLayout;
-//	QGridLayout *ampModeBoxLayout = new QGridLayout;
 
 	// make the buttons
 	ampButtonGroup = new QButtonGroup;
@@ -555,85 +528,8 @@ void AMAmp::customizeGUI(void) {
 	ampModeGroupLayout->addWidget(iresistButton, 7, 0, Qt::AlignCenter);
 	ampModeGroupLayout->addWidget(ifollowButton, 8, 0, Qt::AlignCenter);
 
-/*	
-	ampModeGroupLayout->addWidget(vclampButton);
-	ampModeGroupLayout->addWidget(izeroButton);
-	ampModeGroupLayout->addWidget(iclampButton);
-	ampModeGroupLayout->addWidget(vcompButton);
-	ampModeGroupLayout->addWidget(vtestButton);
-	ampModeGroupLayout->addWidget(iresistButton);
-	ampModeGroupLayout->addWidget(ifollowButton);
-*/
-
-	// make the offset edit boxes
-/*
-	QHBoxLayout *vclampGroup = new QHBoxLayout;
-	QHBoxLayout *izeroGroup = new QHBoxLayout;
-	QHBoxLayout *iclampGroup = new QHBoxLayout;
-	QHBoxLayout *vcompGroup = new QHBoxLayout;
-	QHBoxLayout *vtestGroup = new QHBoxLayout;
-	QHBoxLayout *iresistGroup = new QHBoxLayout;
-	QHBoxLayout *ifollowGroup = new QHBoxLayout;
-*/
-
-/*
-	vclampEdit = new QLineEdit();
-	vclampEdit->setValidator( new QDoubleValidator(vclampEdit) );
-	vclampEdit->setToolTip("VClamp mode offset");
-	izeroEdit = new QLineEdit();
-	iclampEdit = new QLineEdit();
-	vcompEdit = new QLineEdit();
-	vtestEdit = new QLineEdit();
-	iresistEdit = new QLineEdit();
-	ifollowEdit = new QLineEdit();
-*/
-
-/*
-	ampModeBoxLayout->addWidget(vclampButton, 0, 0);
-	ampModeBoxLayout->addWidget(vclampEdit, 0, 1);
-	ampModeBoxLayout->addWidget(izeroButton, 1, 0);
-	ampModeBoxLayout->addWidget(izeroEdit, 1, 1);
-	ampModeBoxLayout->addWidget(iclampButton, 2, 0);
-	ampModeBoxLayout->addWidget(iclampEdit, 2, 1);
-	ampModeBoxLayout->addWidget(vcompButton, 3, 0);
-	ampModeBoxLayout->addWidget(vcompEdit, 3, 1);
-	ampModeBoxLayout->addWidget(vtestButton, 4, 0);
-	ampModeBoxLayout->addWidget(vtestEdit, 4, 1);
-	ampModeBoxLayout->addWidget(iresistButton, 5, 0);
-	ampModeBoxLayout->addWidget(iresistEdit, 5, 1);
-	ampModeBoxLayout->addWidget(ifollowButton, 6, 0);
-	ampModeBoxLayout->addWidget(ifollowEdit, 6, 1);
-*/
-
-/*
-	vclampGroup->addWidget(vclampButton);
-	vclampGroup->addWidget(vclampEdit);
-	izeroGroup->addWidget(izeroButton);
-	izeroGroup->addWidget(izeroEdit);
-	iclampGroup->addWidget(iclampButton);
-	iclampGroup->addWidget(iclampEdit);
-	vcompGroup->addWidget(vcompButton);
-	vcompGroup->addWidget(vcompEdit);
-	vtestGroup->addWidget(vtestButton);
-	vtestGroup->addWidget(vtestEdit);
-	iresistGroup->addWidget(iresistButton);
-	iresistGroup->addWidget(iresistEdit);
-	ifollowGroup->addWidget(ifollowButton);
-	ifollowGroup->addWidget(ifollowEdit);
-
-	ampModeBoxLayout->addLayout(vclampGroup);
-	ampModeBoxLayout->addLayout(izeroGroup);
-	ampModeBoxLayout->addLayout(iclampGroup);
-	ampModeBoxLayout->addLayout(vcompGroup);
-	ampModeBoxLayout->addLayout(vtestGroup);
-	ampModeBoxLayout->addLayout(iresistGroup);
-	ampModeBoxLayout->addLayout(ifollowGroup);
-*/
-
 	// add widgets to custom layout
-//	customLayout->addLayout(ioBoxLayout, 0, 0);
 	customLayout->addWidget(ioGroupBox, 0, 0);
-//	customLayout->addLayout(ampModeBoxLayout, 2, 0, Qt::AlignCenter);
 	customLayout->addWidget(ampModeGroupBox, 2, 0);
 	setLayout(customLayout);
 
@@ -642,7 +538,6 @@ void AMAmp::customizeGUI(void) {
 	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateOffset(int)));
 	QObject::connect(inputBox, SIGNAL(valueChanged(int)), this, SLOT(updateInputChannel(int)));
 	QObject::connect(outputBox, SIGNAL(valueChanged(int)), this, SLOT(updateOutputChannel(int)));
-//	QObject::connect(offsetEdit, SIGNAL(returnPressed(void)), offsetEdit, SLOT(blacken(void)));
 	QObject::connect(aiOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAIOffset(const QString &)));
 	QObject::connect(aoOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAOOffset(const QString &)));
 }
