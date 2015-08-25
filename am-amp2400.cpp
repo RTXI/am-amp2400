@@ -503,6 +503,9 @@ void AMAmp::customizeGUI(void) {
 	offsetLayout->addWidget(aoOffsetUnits, 1, 2, Qt::AlignCenter);
 	ampModeGroupLayout->addLayout(offsetLayout, 0, 0);
 
+	//add little bit of space betwen offsets and buttons
+	ampModeGroupLayout->addItem( new QSpacerItem(0, 10, QSizePolicy::Expanding, QSizePolicy::Minimum), 2, 0);
+
 	// make the buttons
 	ampButtonGroup = new QButtonGroup;
 	vclampButton = new QRadioButton("VClamp");
@@ -529,7 +532,7 @@ void AMAmp::customizeGUI(void) {
 	ampButtonGroupLayout->addWidget(iresistButton, 2, 1);
 	ampButtonGroupLayout->addWidget(ifollowButton, 3, 0);
 
-	ampModeGroupLayout->addLayout(ampButtonGroupLayout, 2, 0);
+	ampModeGroupLayout->addLayout(ampButtonGroupLayout, 3, 0);
 
 	// add widgets to custom layout
 	customLayout->addWidget(ioGroupBox, 0, 0);
