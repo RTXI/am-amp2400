@@ -530,15 +530,6 @@ void AMAmp::customizeGUI(void) {
 	ampButtonGroupLayout->addWidget(ifollowButton, 3, 0);
 
 	ampModeGroupLayout->addLayout(ampButtonGroupLayout, 2, 0);
-/*
-	ampModeGroupLayout->addWidget(vclampButton, 2, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(izeroButton, 3, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(iclampButton, 4, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(vcompButton, 5, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(vtestButton, 6, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(iresistButton, 7, 0, Qt::AlignCenter);
-	ampModeGroupLayout->addWidget(ifollowButton, 8, 0, Qt::AlignCenter);
-*/
 
 	// add widgets to custom layout
 	customLayout->addWidget(ioGroupBox, 0, 0);
