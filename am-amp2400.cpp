@@ -216,9 +216,13 @@ void AMAmp::updateDAQ(void) {
 		case 1: // VClamp
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
-				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -230,9 +234,13 @@ void AMAmp::updateDAQ(void) {
 		case 2: // I = 0
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain + ao_offset); // this may be a horrible mistake
+				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -244,9 +252,13 @@ void AMAmp::updateDAQ(void) {
 		case 3: // IClamp
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -258,9 +270,13 @@ void AMAmp::updateDAQ(void) {
 		case 4: // VComp
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
-				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -272,9 +288,13 @@ void AMAmp::updateDAQ(void) {
 		case 5: // VTest
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
-				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
+				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -286,9 +306,13 @@ void AMAmp::updateDAQ(void) {
 		case 6: // IResist
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
@@ -300,9 +324,13 @@ void AMAmp::updateDAQ(void) {
 		case 7: // IFollow
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain + ai_offset);
+				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain + ao_offset);
+				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
