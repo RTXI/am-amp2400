@@ -78,6 +78,7 @@ extern "C" Plugin::Object * createRTXIPlugin(void) {
 };
 
 static DefaultGUIModel::variable_t vars[] = {
+	{ "I=0 Input", "Input signal to be treated as 0.", DefaultGUIModel::INPUT, }, 
 	{ "Mode Bit 1", "Bit 1 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 2", "Bit 2 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 4", "Bit 4 of signal sent to amplfier", DefaultGUIModel::OUTPUT, },
@@ -127,6 +128,11 @@ void AMAmp::initParameters(void) {
 	ai_offset = 0; 
 	ao_offset = 0;
 
+	zero_offset = 0;
+//	zero_found = true;
+	data_acquired = true;
+	signal_count = 0;
+
 	device = 0;
 	DAQ::Manager::getInstance()->foreachDevice(getDevice, &device);
 
@@ -139,6 +145,19 @@ void AMAmp::initParameters(void) {
 	vclamp_ao_gain = 50;
 };
 
+void AMAmp::execute(void) {
+	if (!data_acquired) {
+		signal_to_zero.push(input(0));
+		signal_count++;
+	
+		if (signal_count > 1000) { // 500 points is completely arbitrary
+			signal_count = 0;
+			data_acquired=true;
+		}
+	} else {	
+		return;
+	}
+}
 
 void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 
@@ -181,6 +200,10 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			outputBox->blacken();
 			aiOffsetEdit->blacken();
 			aoOffsetEdit->blacken();
+
+			// Disable findZeroButton if not currently I=0 mode
+			if (amp_mode == 2) findZeroButton->setEnabled(true);
+			else findZeroButton->setEnabled(false);
 			break;
 
 		default:
@@ -471,6 +494,56 @@ void AMAmp::updateOffset(int new_mode) {
 	aoOffsetEdit->setText(QString::number(scaled_ao_offset));
 }
 
+void AMAmp::findZeroOffset(void) {
+	findZeroButton->setEnabled(false);
+	iclampButton->setEnabled(false);
+	vclampButton->setEnabled(false);
+	izeroButton->setEnabled(false);
+	vcompButton->setEnabled(false);
+	vtestButton->setEnabled(false);
+	iresistButton->setEnabled(false);
+	ifollowButton->setEnabled(false);
+	modifyButton->setEnabled(false);
+
+	data_acquired = false;
+//	zero_found = false;
+	checkZeroCalc->start(1000);
+	std::cout<<"Start timer"<<std::endl;
+
+	pause(false);
+	std::cout<<"Unpaused"<<std::endl;
+}
+
+void AMAmp::calculateOffset(void) {
+	if (data_acquired) {
+		pause(true);
+		std::cout<<"Paused"<<std::endl;
+
+		checkZeroCalc->stop();
+
+		zero_offset = signal_to_zero.mean();
+		std::cout<<"Est. Offst. = "<<zero_offset<<std::endl;
+		signal_to_zero.clear();
+
+//		findZeroButton->setChecked(false);
+		findZeroButton->setEnabled(true);
+		iclampButton->setEnabled(true);
+		vclampButton->setEnabled(true);
+		izeroButton->setEnabled(true);
+		vcompButton->setEnabled(true);
+		vtestButton->setEnabled(true);
+		iresistButton->setEnabled(true);
+		ifollowButton->setEnabled(true);
+		modifyButton->setEnabled(true);
+
+		aoOffsetEdit->setText(QString::number(zero_offset));
+		aoOffsetEdit->redden();
+	} else {
+		std::cout<<"Not done yet... "<<signal_count<<std::endl;
+		return;
+	}
+}
+
 /* 
  * Sets up the GUI. It's a bit messy. These are the important things to remember:
  *   1. The parameter/state block created by DefaultGUIModel is HIDDEN. 
@@ -529,6 +602,12 @@ void AMAmp::customizeGUI(void) {
 	offsetLayout->addWidget(aoOffsetEdit, 1, 1);
 	aoOffsetUnits = new QLabel("---");
 	offsetLayout->addWidget(aoOffsetUnits, 1, 2, Qt::AlignCenter);
+
+	findZeroButton = new QPushButton("Zero Output Channel");
+	findZeroButton->setToolTip("Find offset that will make output from specified channel = 0");
+//	findZeroButton->setCheckable(true);
+	offsetLayout->addWidget(findZeroButton, 2, 0, 1, 3);
+
 	ampModeGroupLayout->addLayout(offsetLayout, 0, 0);
 
 	//add little bit of space betwen offsets and buttons
@@ -567,6 +646,8 @@ void AMAmp::customizeGUI(void) {
 	customLayout->addWidget(ampModeGroupBox, 2, 0);
 	setLayout(customLayout);
 
+	checkZeroCalc = new QTimer(this);
+
 	// connect the widgets to the signals
 	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateMode(int)));
 	QObject::connect(ampButtonGroup, SIGNAL(buttonPressed(int)), this, SLOT(updateOffset(int)));
@@ -574,6 +655,8 @@ void AMAmp::customizeGUI(void) {
 	QObject::connect(outputBox, SIGNAL(valueChanged(int)), this, SLOT(updateOutputChannel(int)));
 	QObject::connect(aiOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAIOffset(const QString &)));
 	QObject::connect(aoOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAOOffset(const QString &)));
+	QObject::connect(findZeroButton, SIGNAL(clicked(void)), this, SLOT(findZeroOffset(void)));
+	QObject::connect(checkZeroCalc, SIGNAL(timeout(void)), this, SLOT(calculateOffset(void)));
 }
 
 void AMAmp::doSave(Settings::Object::State &s) const {

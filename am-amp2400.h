@@ -17,6 +17,7 @@
 
 #include <daq.h>
 #include <default_gui_model.h>
+#include <runningstat.h>
 
 class AMAmpLineEdit : public QLineEdit {
 
@@ -72,6 +73,7 @@ class AMAmp : public DefaultGUIModel {
 		void customizeGUI(void);
 		void updateDAQ(void);
 		void updateGUI(void);
+		void execute(void);
 	
 	protected:
 		virtual void update(DefaultGUIModel::update_flags_t);
@@ -85,6 +87,11 @@ class AMAmp : public DefaultGUIModel {
 		double vclamp_ao_gain; // 20 mV / V
 
 		double ai_offset, ao_offset;
+
+		RunningStat signal_to_zero;
+		int signal_count;
+		bool zero_found, data_acquired;
+		double zero_offset;
 
 /*
 		double iclamp_offset, vclamp_offset, izero_offset, vcomp_offset,
@@ -107,6 +114,8 @@ class AMAmp : public DefaultGUIModel {
 //		AMAmpComboBox *headstageBox, *outputGainBox;
 		AMAmpLineEdit *aiOffsetEdit, *aoOffsetEdit;
 		QLabel *aiOffsetUnits, *aoOffsetUnits;
+		QPushButton *findZeroButton;
+		QTimer *checkZeroCalc;
 
 		void doSave(Settings::Object::State &) const;
 		void doLoad(const Settings::Object::State &);
@@ -118,4 +127,6 @@ class AMAmp : public DefaultGUIModel {
 		void updateMode(int);
 		void updateInputChannel(int);
 		void updateOutputChannel(int);
+		void findZeroOffset(void);
+		void calculateOffset(void);
 };
