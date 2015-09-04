@@ -32,21 +32,6 @@ class AMAmpLineEdit : public QLineEdit {
 		void redden(void);
 };
 
-/*
-class AMAmpComboBox : public QComboBox {
-
-	Q_OBJECT
-
-	public:
-		AMAmpComboBox(QWidget * =0);
-		~AMAmpComboBox(void);
-		void blacken(void);
-
-	public slots:
-		void redden(void);
-};
-*/
-
 class AMAmpSpinBox : public QSpinBox {
 
 	Q_OBJECT
@@ -91,16 +76,9 @@ class AMAmp : public DefaultGUIModel {
 		enum channel_t {AI, AO, NA } channel;
 
 		RunningStat zero_signal;
-//		RunningStat ai_zero_signal;
-//		RunningStat ao_zero_signal;
 		int signal_count;
 		bool zero_found, data_acquired;
 		double zero_offset;
-
-/*
-		double iclamp_offset, vclamp_offset, izero_offset, vcomp_offset,
-		       vtest_offset, iresist_offset, ifollow_offset;
-*/
 
 		int input_channel, output_channel;
 		int amp_mode, temp_mode;
@@ -109,13 +87,8 @@ class AMAmp : public DefaultGUIModel {
 	
 		QRadioButton *iclampButton, *vclampButton, *izeroButton, *vcompButton, 
 		             *vtestButton, *iresistButton, *ifollowButton;
-/*
-		QLineEdit *iclampEdit, *vclampEdit, *izeroEdit, *vcompEdit,
-		          *vtestEdit, *iresistEdit, *ifollowEdit;
-*/
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
-//		AMAmpComboBox *headstageBox, *outputGainBox;
 		AMAmpLineEdit *aiOffsetEdit, *aoOffsetEdit;
 		QLabel *aiOffsetUnits, *aoOffsetUnits;
 		QPushButton *findZeroButton;
