@@ -377,6 +377,8 @@ void AMAmp::updateOffset(int new_mode) {
 	case 2: // I = 0
 		scaled_ai_offset = scaled_ai_offset / izero_ai_gain;
 		scaled_ao_offset = scaled_ao_offset / izero_ao_gain;
+		
+		findZeroButton->setEnabled(true);
 		break;
 
 	case 3: // IClamp
@@ -416,6 +418,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 		aiOffsetUnits->setText("1 mV/pA");
 		aoOffsetUnits->setText("20 mV/V");
+		
+		findZeroButton->setEnabled(false);
 		break;
 
 	case 2: // I = 0
@@ -432,6 +436,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("2 nA/V");
+		
+		findZeroButton->setEnabled(false);
 		break;
 
 	case 4: // VComp
@@ -440,6 +446,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 		aiOffsetUnits->setText("1 mV/pA");
 		aoOffsetUnits->setText("20 mV/V");
+		
+		findZeroButton->setEnabled(false);
 		break;
 
 	case 5: // VTest
@@ -448,6 +456,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 		aiOffsetUnits->setText("1 mV/pA");
 		aoOffsetUnits->setText("20 mV/V");
+		
+		findZeroButton->setEnabled(false);
 		break;
 
 	case 6: // IResist
@@ -456,6 +466,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("2 nA/V");
+		
+		findZeroButton->setEnabled(false);
 		break;
 
 	case 7: // IFollow
@@ -464,6 +476,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("2 nA/V");
+		
+		findZeroButton->setEnabled(false);
 		break;
 
 	default:
