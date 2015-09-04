@@ -77,7 +77,7 @@ class AMAmp : public DefaultGUIModel {
 
 		RunningStat zero_signal;
 		int signal_count;
-		bool zero_found, data_acquired;
+		bool data_acquired;
 		double zero_offset;
 
 		int input_channel, output_channel;

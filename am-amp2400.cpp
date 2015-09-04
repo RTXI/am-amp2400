@@ -114,7 +114,6 @@ void AMAmp::initParameters(void) {
 	channel = NA; 
 
 	zero_offset = 0;
-//	zero_found = true;
 	data_acquired = true;
 	signal_count = 0;
 
