@@ -150,7 +150,7 @@ void AMAmp::execute(void) {
 		signal_to_zero.push(input(0));
 		signal_count++;
 	
-		if (signal_count > 1000) { // 500 points is completely arbitrary
+		if (signal_count > 10000) { // 10000 points is completely arbitrary
 			signal_count = 0;
 			data_acquired=true;
 		}
@@ -522,7 +522,8 @@ void AMAmp::calculateOffset(void) {
 		checkZeroCalc->stop();
 
 		zero_offset = signal_to_zero.mean();
-		std::cout<<"Est. Offst. = "<<zero_offset<<std::endl;
+		std::cout<<"Calc. Offst. = "<<zero_offset<<std::endl;
+		std::cout<<"Total Offst. = "<<zero_offset+ao_offset<<std::endl;
 		signal_to_zero.clear();
 
 //		findZeroButton->setChecked(false);
@@ -536,7 +537,9 @@ void AMAmp::calculateOffset(void) {
 		ifollowButton->setEnabled(true);
 		modifyButton->setEnabled(true);
 
-		aoOffsetEdit->setText(QString::number(zero_offset));
+		aoOffsetEdit->setText(QString::number(zero_offset+ao_offset));
+		parameter["AO Offset"].edit->setText(QString::number(zero_offset+ao_offset));
+		parameter["AO Offset"].edit->setModified(true);
 		aoOffsetEdit->redden();
 	} else {
 		std::cout<<"Not done yet... "<<signal_count<<std::endl;
