@@ -78,7 +78,8 @@ extern "C" Plugin::Object * createRTXIPlugin(void) {
 };
 
 static DefaultGUIModel::variable_t vars[] = {
-	{ "I=0 Input", "Input signal to be treated as 0.", DefaultGUIModel::INPUT, }, 
+	{ "I=0 Input from AI", "Empty signal from analog input for 'calibrating' the input channel for I=0.", DefaultGUIModel::INPUT, }, 
+	{ "I=0 Input from AO", "Empty signal from analog output for 'calibrating' the output channel for I=0.", DefaultGUIModel::INPUT, }, 
 	{ "Mode Bit 1", "Bit 1 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 2", "Bit 2 of signal sent to amplfier", DefaultGUIModel::OUTPUT, }, 
 	{ "Mode Bit 4", "Bit 4 of signal sent to amplfier", DefaultGUIModel::OUTPUT, },
@@ -127,6 +128,7 @@ void AMAmp::initParameters(void) {
 	amp_mode = 2;
 	ai_offset = 0; 
 	ao_offset = 0;
+	channel = NA; 
 
 	zero_offset = 0;
 //	zero_found = true;
@@ -147,10 +149,26 @@ void AMAmp::initParameters(void) {
 
 void AMAmp::execute(void) {
 	if (!data_acquired) {
-		signal_to_zero.push(input(0));
-		signal_count++;
+		switch (channel) {
+		case AI:
+			zero_signal.push(input(0));
+			signal_count++;
+			break;
+		case AO:
+			zero_signal.push(input(1));
+			signal_count++;
+			break;
+		case NA:
+			std::cout<<"ERROR: NA case"<<std::endl;
+			signal_count++;
+			break;
+		default:
+			std::cout<<"ERROR: default case"<<std::endl;
+			signal_count++;
+			break;
+		}
 	
-		if (signal_count > 10000) { // 10000 points is completely arbitrary
+		if (signal_count > 5000) { // 5000 points is completely arbitrary
 			signal_count = 0;
 			data_acquired=true;
 		}
@@ -506,41 +524,72 @@ void AMAmp::findZeroOffset(void) {
 	modifyButton->setEnabled(false);
 
 	data_acquired = false;
-//	zero_found = false;
+	channel = AI;
 	checkZeroCalc->start(1000);
-	std::cout<<"Start timer"<<std::endl;
 
 	pause(false);
-	std::cout<<"Unpaused"<<std::endl;
 }
 
 void AMAmp::calculateOffset(void) {
 	if (data_acquired) {
-		pause(true);
-		std::cout<<"Paused"<<std::endl;
-
 		checkZeroCalc->stop();
+		pause(true);
 
-		zero_offset = signal_to_zero.mean();
-		std::cout<<"Calc. Offst. = "<<zero_offset<<std::endl;
-		std::cout<<"Total Offst. = "<<zero_offset+ao_offset<<std::endl;
-		signal_to_zero.clear();
+		switch(channel) {
+		case AI: 
+			zero_offset = zero_signal.mean();
+			std::cout<<"AI Calc. Offst. = "<<zero_offset*izero_ai_gain<<std::endl;
+			std::cout<<"AI Total Offst. = "<<zero_offset*izero_ai_gain+ai_offset<<std::endl;
+			zero_signal.clear();
 
-//		findZeroButton->setChecked(false);
-		findZeroButton->setEnabled(true);
-		iclampButton->setEnabled(true);
-		vclampButton->setEnabled(true);
-		izeroButton->setEnabled(true);
-		vcompButton->setEnabled(true);
-		vtestButton->setEnabled(true);
-		iresistButton->setEnabled(true);
-		ifollowButton->setEnabled(true);
-		modifyButton->setEnabled(true);
+			aiOffsetEdit->setText(QString::number(zero_offset*izero_ai_gain+ai_offset));
+			aiOffsetEdit->redden();
+			parameter["AI Offset"].edit->setText(QString::number(zero_offset*izero_ai_gain+ai_offset));
+			parameter["AI Offset"].edit->setModified(true);
 
-		aoOffsetEdit->setText(QString::number(zero_offset+ao_offset));
-		parameter["AO Offset"].edit->setText(QString::number(zero_offset+ao_offset));
-		parameter["AO Offset"].edit->setModified(true);
-		aoOffsetEdit->redden();
+			modify();
+
+			channel = AO;
+			data_acquired = false;
+			checkZeroCalc->start();
+			pause(false);
+			break;
+
+		case AO:
+			zero_offset = zero_signal.mean();
+			std::cout<<"AO Calc. Offst. = "<<zero_offset<<std::endl;
+			std::cout<<"AO Total Offst. = "<<zero_offset+ao_offset<<std::endl<<std::endl;
+			zero_signal.clear();
+
+			aoOffsetEdit->setText(QString::number(zero_offset+ao_offset));
+			aoOffsetEdit->redden();
+			parameter["AO Offset"].edit->setText(QString::number(zero_offset+ao_offset));
+			parameter["AO Offset"].edit->setModified(true);
+
+			modify();
+
+			findZeroButton->setEnabled(true);
+			iclampButton->setEnabled(true);
+			vclampButton->setEnabled(true);
+			izeroButton->setEnabled(true);
+			vcompButton->setEnabled(true);
+			vtestButton->setEnabled(true);
+			iresistButton->setEnabled(true);
+			ifollowButton->setEnabled(true);
+			modifyButton->setEnabled(true);
+			
+			channel = NA;
+			break;
+
+		case NA:
+			std::cout<<"Case NA isn't supposed to be called."<<std::endl;
+			break;
+
+		default:
+			std::cout<<"ERROR: default case called."<<std::endl;
+			break;
+		}
+
 	} else {
 		std::cout<<"Not done yet... "<<signal_count<<std::endl;
 		return;
@@ -608,7 +657,6 @@ void AMAmp::customizeGUI(void) {
 
 	findZeroButton = new QPushButton("Zero Output Channel");
 	findZeroButton->setToolTip("Find offset that will make output from specified channel = 0");
-//	findZeroButton->setCheckable(true);
 	offsetLayout->addWidget(findZeroButton, 2, 0, 1, 3);
 
 	ampModeGroupLayout->addLayout(offsetLayout, 0, 0);

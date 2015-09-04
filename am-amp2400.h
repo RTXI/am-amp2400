@@ -88,7 +88,11 @@ class AMAmp : public DefaultGUIModel {
 
 		double ai_offset, ao_offset;
 
-		RunningStat signal_to_zero;
+		enum channel_t {AI, AO, NA } channel;
+
+		RunningStat zero_signal;
+//		RunningStat ai_zero_signal;
+//		RunningStat ao_zero_signal;
 		int signal_count;
 		bool zero_found, data_acquired;
 		double zero_offset;
