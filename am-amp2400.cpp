@@ -133,7 +133,8 @@ void AMAmp::execute(void) {
 	if (!data_acquired) {
 		switch (channel) {
 		case AI:
-			zero_signal.push(input(0));
+//			zero_signal.push(input(0));
+			zero_signal.push(0.0); // scaling input channels is broken as of now...
 			signal_count++;
 			break;
 		case AO:
@@ -154,8 +155,6 @@ void AMAmp::execute(void) {
 			signal_count = 0;
 			data_acquired=true;
 		}
-	} else {	
-		return;
 	}
 }
 
@@ -370,40 +369,40 @@ void AMAmp::updateOffset(int new_mode) {
 
 	switch(amp_mode) {
 	case 1: // VClamp
-		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
 		break;
 
 	case 2: // I = 0
-		scaled_ai_offset = scaled_ai_offset / izero_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / izero_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * izero_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * izero_ao_gain;
 		
 		findZeroButton->setEnabled(true);
 		break;
 
 	case 3: // IClamp
-		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
 		break;
 
 	case 4: // VComp
-		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
 		break;
 
 	case 5: // VTest
-		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
 		break;
 
 	case 6: // IResist
-		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
 		break;
 
 	case 7: // IFollow
-		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
 		break;
 
 	default:
@@ -413,8 +412,8 @@ void AMAmp::updateOffset(int new_mode) {
 
 	switch(new_mode) {
 	case 1: // VClamp
-		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
 
 		aiOffsetUnits->setText("1 mV/pA");
 		aoOffsetUnits->setText("20 mV/V");
@@ -423,16 +422,16 @@ void AMAmp::updateOffset(int new_mode) {
 		break;
 
 	case 2: // I = 0
-		scaled_ai_offset = scaled_ai_offset * izero_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * izero_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / izero_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / izero_ao_gain;
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("---");
 		break;
 
 	case 3: // IClamp
-		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("2 nA/V");
@@ -441,8 +440,8 @@ void AMAmp::updateOffset(int new_mode) {
 		break;
 
 	case 4: // VComp
-		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
 
 		aiOffsetUnits->setText("1 mV/pA");
 		aoOffsetUnits->setText("20 mV/V");
@@ -451,8 +450,8 @@ void AMAmp::updateOffset(int new_mode) {
 		break;
 
 	case 5: // VTest
-		scaled_ai_offset = scaled_ai_offset * vclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * vclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / vclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / vclamp_ao_gain;
 
 		aiOffsetUnits->setText("1 mV/pA");
 		aoOffsetUnits->setText("20 mV/V");
@@ -461,8 +460,8 @@ void AMAmp::updateOffset(int new_mode) {
 		break;
 
 	case 6: // IResist
-		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("2 nA/V");
@@ -471,8 +470,8 @@ void AMAmp::updateOffset(int new_mode) {
 		break;
 
 	case 7: // IFollow
-		scaled_ai_offset = scaled_ai_offset * iclamp_ai_gain;
-		scaled_ao_offset = scaled_ao_offset * iclamp_ao_gain;
+		scaled_ai_offset = scaled_ai_offset / iclamp_ai_gain;
+		scaled_ao_offset = scaled_ao_offset / iclamp_ao_gain;
 
 		aiOffsetUnits->setText("1 V/V");
 		aoOffsetUnits->setText("2 nA/V");
@@ -521,18 +520,27 @@ void AMAmp::calculateOffset(void) {
 		case AI: 
 			zero_offset = zero_signal.mean();
 			std::cout<<"AI Calc. Offst. = "<<zero_offset*izero_ai_gain<<std::endl;
+			std::cout<<"AI Curr. Offst. = "<<ai_offset<<std::endl;
 			std::cout<<"AI Total Offst. = "<<zero_offset*izero_ai_gain+ai_offset<<std::endl;
+/*
+			std::cout<<"AI Calc. Offst. = "<<zero_offset<<std::endl;
+			std::cout<<"AI Curr. Offst. = "<<ai_offset<<std::endl;
+			std::cout<<"AI Total Offst. = "<<ai_offset+zero_offset<<std::endl;
+*/
 			zero_signal.clear();
 
 			aiOffsetEdit->setText(QString::number(zero_offset*izero_ai_gain+ai_offset));
+//			aiOffsetEdit->setText(QString::number(zero_offset+ai_offset));
 			aiOffsetEdit->redden();
 			parameter["AI Offset"].edit->setText(QString::number(zero_offset*izero_ai_gain+ai_offset));
+//			parameter["AI Offset"].edit->setText(QString::number(ai_offset+zero_offset));
 			parameter["AI Offset"].edit->setModified(true);
 
-			modify();
+//			modify();
 
 			channel = AO;
 			data_acquired = false;
+			zero_offset = 0;
 			checkZeroCalc->start();
 			pause(false);
 			break;
@@ -540,15 +548,16 @@ void AMAmp::calculateOffset(void) {
 		case AO:
 			zero_offset = zero_signal.mean();
 			std::cout<<"AO Calc. Offst. = "<<zero_offset<<std::endl;
-			std::cout<<"AO Total Offst. = "<<zero_offset+ao_offset<<std::endl<<std::endl;
+			std::cout<<"AO Curr. Offst. = "<<ao_offset<<std::endl;
+			std::cout<<"AO Total Offst. = "<<ao_offset+zero_offset<<std::endl<<std::endl;
 			zero_signal.clear();
 
-			aoOffsetEdit->setText(QString::number(zero_offset+ao_offset));
+			aoOffsetEdit->setText(QString::number(ao_offset+zero_offset));
 			aoOffsetEdit->redden();
 			parameter["AO Offset"].edit->setText(QString::number(zero_offset+ao_offset));
 			parameter["AO Offset"].edit->setModified(true);
 
-			modify();
+//			modify();
 
 			findZeroButton->setEnabled(true);
 			iclampButton->setEnabled(true);
@@ -561,6 +570,7 @@ void AMAmp::calculateOffset(void) {
 			modifyButton->setEnabled(true);
 			
 			channel = NA;
+			zero_offset = 0;
 			break;
 
 		case NA:
@@ -637,7 +647,7 @@ void AMAmp::customizeGUI(void) {
 	aoOffsetUnits = new QLabel("---");
 	offsetLayout->addWidget(aoOffsetUnits, 1, 2, Qt::AlignCenter);
 
-	findZeroButton = new QPushButton("Zero Output Channel");
+	findZeroButton = new QPushButton("Zero AI/AO Channels");
 	findZeroButton->setToolTip("Find offset that will make output from specified channel = 0");
 	offsetLayout->addWidget(findZeroButton, 2, 0, 1, 3);
 
