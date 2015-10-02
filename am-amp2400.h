@@ -19,6 +19,19 @@
 #include <default_gui_model.h>
 #include <runningstat.h>
 
+class AMAmpComboBox : public QComboBox {
+
+	Q_OBJECT
+
+	public:
+		AMAmpComboBox(QWidget * =0);
+		~AMAmpComboBox(void);
+		void blacken(void);
+
+	public slots:
+		void redden(void);
+};
+
 class AMAmpLineEdit : public QLineEdit {
 
 	Q_OBJECT
@@ -64,16 +77,22 @@ class AMAmp : public DefaultGUIModel {
 		virtual void update(DefaultGUIModel::update_flags_t);
 
 	private:
+		friend class AMAmpLineEdit;
+		friend class AMAmpComboBox;
+		friend class AMAmpSpinBox;
+
 		double iclamp_ai_gain; // (1 V / V)
 		double iclamp_ao_gain; // (2 nA / V) ...hmm
 		double izero_ai_gain; // (1 V / V)
 		double izero_ao_gain; // No output
 		double vclamp_ai_gain; // 1 mV / pA
 		double vclamp_ao_gain; // 20 mV / V
+		double probe_gain_factor;
 
 		double ai_offset, ao_offset;
 
 		enum channel_t {AI, AO, NA } channel;
+		enum probe_gain_t {LOW, HIGH } probe_gain;
 
 		RunningStat zero_signal;
 		int signal_count;
@@ -90,6 +109,7 @@ class AMAmp : public DefaultGUIModel {
 		QButtonGroup *ampButtonGroup;
 		AMAmpSpinBox *inputBox, *outputBox;
 		AMAmpLineEdit *aiOffsetEdit, *aoOffsetEdit;
+		AMAmpComboBox *probeGainComboBox;
 		QLabel *aiOffsetUnits, *aoOffsetUnits;
 		QPushButton *findZeroButton;
 		QTimer *checkZeroCalc;
@@ -106,4 +126,5 @@ class AMAmp : public DefaultGUIModel {
 		void updateOutputChannel(int);
 		void findZeroOffset(void);
 		void calculateOffset(void);
+//		void setProbeGain(int);
 };

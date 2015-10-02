@@ -18,6 +18,21 @@
 #include <iostream>
 #include "am-amp2400.h"
 
+// Wrapper for QComboBox. Turns red when changed and black when "Set DAQ" is hit.
+AMAmpComboBox::AMAmpComboBox(QWidget *parent) : QComboBox(parent) {
+	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(redden(void)));
+}
+
+AMAmpComboBox::~AMAmpComboBox(void) {}
+
+void AMAmpComboBox::blacken(void) {
+	this->setStyleSheet("QComboBox { color:black; }");
+}
+
+void AMAmpComboBox::redden(void) {
+	this->setStyleSheet("QComboBox { color:red; }");
+}
+
 /// Create wrapper for QLineEdit. Options go red when changed and black when 'Set DAQ' is hit.
 AMAmpLineEdit::AMAmpLineEdit(QWidget *parent) : QLineEdit(parent) {
 	QObject::connect(this, SIGNAL(textEdited(const QString &)), this, SLOT(redden(void)));
@@ -72,6 +87,8 @@ static DefaultGUIModel::variable_t vars[] = {
 	  DefaultGUIModel::INTEGER, },
 	{ "Amplifier Mode", "Mode to telegraph to amplifier", DefaultGUIModel::PARAMETER | 
 	  DefaultGUIModel::INTEGER, },
+	{ "Probe Gain", "Gain - HIGH (10 MOhm) or LOW (10 GOhm)", DefaultGUIModel::PARAMETER | 
+	  DefaultGUIModel::INTEGER, },
 	{ "AI Offset", 
 	  "Offset the amplifier scaling (entered manually or computed based on current amplifier mode)",
 	   DefaultGUIModel::PARAMETER | DefaultGUIModel::DOUBLE, },
@@ -112,6 +129,8 @@ void AMAmp::initParameters(void) {
 	ai_offset = 0; 
 	ao_offset = 0;
 	channel = NA; 
+	probe_gain = LOW;
+	probe_gain_factor = 1;
 
 	zero_offset = 0;
 	data_acquired = true;
@@ -166,6 +185,7 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			setParameter("Input Channel", input_channel);
 			setParameter("Output Channel", output_channel);
 			setParameter("Amplifier Mode", amp_mode);
+			setParameter("Probe Gain", probe_gain);
 			setParameter("AI Offset", ai_offset);
 			setParameter("AO Offset", ao_offset);
 
@@ -173,6 +193,10 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			outputBox->setValue(output_channel);
 			ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
 			ampButtonGroup->button(amp_mode)->setChecked(true);
+			
+			probeGainComboBox->setCurrentIndex(probe_gain);
+			probeGainComboBox->blacken();
+
 			aiOffsetEdit->setText(QString::number(ai_offset));
 			aoOffsetEdit->setText(QString::number(ao_offset));
 			break;
@@ -188,6 +212,21 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 				ampButtonGroup->button(getParameter("Amplifier Mode").toInt())->setStyleSheet("QRadioButton { font: bold;}");
 				amp_mode = getParameter("Amplifier Mode").toInt();
 			}
+			
+			probe_gain = static_cast<probe_gain_t>(getParameter("Probe Gain").toInt());
+			switch (probe_gain) {
+				case HIGH:
+					probe_gain_factor = .10;
+					break;
+
+				case LOW:
+					probe_gain_factor = 1;
+					break;
+
+				default:
+					std::cout<<"ERROR: default called for probe_gain in update(MODIFY)"<<std::endl;
+					break;
+			}
 
 			ai_offset = getParameter("AI Offset").toDouble();
 			ao_offset = getParameter("AO Offset").toDouble();
@@ -199,6 +238,7 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			outputBox->blacken();
 			aiOffsetEdit->blacken();
 			aoOffsetEdit->blacken();
+			probeGainComboBox->blacken();
 
 			// Disable findZeroButton if not currently I=0 mode
 			if (amp_mode == 2) findZeroButton->setEnabled(true);
@@ -257,7 +297,7 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
@@ -273,7 +313,7 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
@@ -321,7 +361,7 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
@@ -334,7 +374,7 @@ void AMAmp::updateDAQ(void) {
 		case 7: // IFollow
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
-				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
@@ -588,6 +628,24 @@ void AMAmp::calculateOffset(void) {
 	}
 }
 
+/*
+void AMAmp::setProbeGain(int mode) {
+	case (mode) {
+		case LOW: 
+			std::cout<<"Low and go."<<st::endl;
+			probe_gain = LOW;
+			break;
+		case HIGH: 
+			std::cout<<"High and why."<<st::endl;
+			probe_gain = HIGH;
+			break;
+		default:
+			std::cout<<"ERROR: default case called in AMAmp::setProbeGain()"<<st::endl;
+			break;
+	}
+}
+*/
+
 /* 
  * Sets up the GUI. It's a bit messy. These are the important things to remember:
  *   1. The parameter/state block created by DefaultGUIModel is HIDDEN. 
@@ -656,6 +714,19 @@ void AMAmp::customizeGUI(void) {
 	//add little bit of space betwen offsets and buttons
 	ampModeGroupLayout->addItem( new QSpacerItem(0, 10, QSizePolicy::Expanding, QSizePolicy::Minimum), 2, 0);
 
+	// add probe gain combobox
+	QGridLayout *probeGainLayout = new QGridLayout;
+	QLabel *probeGainLabel = new QLabel("Probe Gain:");
+	probeGainComboBox = new AMAmpComboBox;
+	probeGainComboBox->insertItem(0, QString::fromUtf8("Low (10 MΩ)"));
+	probeGainComboBox->insertItem(1, QString::fromUtf8("High (10 GΩ)"));
+	probeGainLayout->addWidget(probeGainLabel, 0, 0);
+	probeGainLayout->addWidget(probeGainComboBox, 0, 1);
+	ampModeGroupLayout->addLayout(probeGainLayout, 3, 0);
+
+	//add little bit of space betwen offsets and buttons
+	ampModeGroupLayout->addItem( new QSpacerItem(0, 10, QSizePolicy::Expanding, QSizePolicy::Minimum), 4, 0);
+
 	// make the buttons
 	ampButtonGroup = new QButtonGroup;
 	vclampButton = new QRadioButton("VClamp");
@@ -682,7 +753,7 @@ void AMAmp::customizeGUI(void) {
 	ampButtonGroupLayout->addWidget(iresistButton, 2, 1);
 	ampButtonGroupLayout->addWidget(ifollowButton, 3, 0);
 
-	ampModeGroupLayout->addLayout(ampButtonGroupLayout, 3, 0);
+	ampModeGroupLayout->addLayout(ampButtonGroupLayout, 5, 0);
 
 	// add widgets to custom layout
 	customLayout->addWidget(ioGroupBox, 0, 0);
@@ -700,6 +771,7 @@ void AMAmp::customizeGUI(void) {
 	QObject::connect(aoOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAOOffset(const QString &)));
 	QObject::connect(findZeroButton, SIGNAL(clicked(void)), this, SLOT(findZeroOffset(void)));
 	QObject::connect(checkZeroCalc, SIGNAL(timeout(void)), this, SLOT(calculateOffset(void)));
+//	QOjbect::connect(probeGainComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setProbeGain(int)));
 }
 
 void AMAmp::doSave(Settings::Object::State &s) const {
@@ -738,6 +810,7 @@ void AMAmp::doLoad(const Settings::Object::State &s) {
 	outputBox->setValue(output_channel);
 	ampButtonGroup->button(amp_mode)->setStyleSheet("QRadioButton { font: bold;}");
 	ampButtonGroup->button(amp_mode)->setChecked(true);
+	probeGainComboBox->setCurrentIndex(probe_gain);
 	aiOffsetEdit->setText(QString::number(ai_offset));
 	aoOffsetEdit->setText(QString::number(ao_offset));
 }
