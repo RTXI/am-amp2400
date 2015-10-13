@@ -126,5 +126,5 @@ class AMAmp : public DefaultGUIModel {
 		void updateOutputChannel(int);
 		void findZeroOffset(void);
 		void calculateOffset(void);
-//		void setProbeGain(int);
+		void setProbeGain(int);
 };

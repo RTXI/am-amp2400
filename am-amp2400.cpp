@@ -214,13 +214,16 @@ void AMAmp::update(DefaultGUIModel::update_flags_t flag) {
 			}
 			
 			probe_gain = static_cast<probe_gain_t>(getParameter("Probe Gain").toInt());
+			std::cout<<probe_gain<<std::endl;
 			switch (probe_gain) {
 				case HIGH:
-					probe_gain_factor = .10;
+					probe_gain_factor = 1; //.10;
+					std::cout<<"Probe Gain HIGH - "<<probe_gain_factor<<std::endl;
 					break;
 
 				case LOW:
-					probe_gain_factor = 1;
+					probe_gain_factor = 10; //1;
+					std::cout<<"Probe Gain LOW - "<<probe_gain_factor<<std::endl;
 					break;
 
 				default:
@@ -311,9 +314,11 @@ void AMAmp::updateDAQ(void) {
 			if(device) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
 				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
+//				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
 				device->setAnalogCalibration(DAQ::AI, input_channel);
-				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain*probe_gain_factor);
+				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
+//				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
 				device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
@@ -628,23 +633,25 @@ void AMAmp::calculateOffset(void) {
 	}
 }
 
-/*
 void AMAmp::setProbeGain(int mode) {
-	case (mode) {
+	switch (mode) {
 		case LOW: 
-			std::cout<<"Low and go."<<st::endl;
-			probe_gain = LOW;
+			std::cout<<"Low and go."<<std::endl;
+//			probe_gain = LOW;
+			parameter["Probe Gain"].edit->setText(QString::number(mode));
+			parameter["Probe Gain"].edit->setModified(true);
 			break;
 		case HIGH: 
-			std::cout<<"High and why."<<st::endl;
-			probe_gain = HIGH;
+			std::cout<<"High and why."<<std::endl;
+//			probe_gain = HIGH;
+			parameter["Probe Gain"].edit->setText(QString::number(mode));
+			parameter["Probe Gain"].edit->setModified(true);
 			break;
 		default:
-			std::cout<<"ERROR: default case called in AMAmp::setProbeGain()"<<st::endl;
+			std::cout<<"ERROR: default case called in AMAmp::setProbeGain()"<<std::endl;
 			break;
 	}
 }
-*/
 
 /* 
  * Sets up the GUI. It's a bit messy. These are the important things to remember:
@@ -771,7 +778,7 @@ void AMAmp::customizeGUI(void) {
 	QObject::connect(aoOffsetEdit, SIGNAL(textEdited(const QString &)), this, SLOT(setAOOffset(const QString &)));
 	QObject::connect(findZeroButton, SIGNAL(clicked(void)), this, SLOT(findZeroOffset(void)));
 	QObject::connect(checkZeroCalc, SIGNAL(timeout(void)), this, SLOT(calculateOffset(void)));
-//	QOjbect::connect(probeGainComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setProbeGain(int)));
+	QObject::connect(probeGainComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setProbeGain(int)));
 }
 
 void AMAmp::doSave(Settings::Object::State &s) const {
