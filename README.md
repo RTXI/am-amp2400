@@ -6,9 +6,14 @@
 ![AM Amp 2400 Controller GUI](am-amp2400.png)
 
 <!--start-->
-<p>Controls the AM Amp 2400 amplifier by scaling the gains on the analog
+<p>
+Controls the AM Amp 2400 amplifier by scaling the gains on the analog
 input/output channels and sending a mode telegraph to set the amplifier mode
-(custom).</p>
+(custom).
+
+Also enables scaling of custom AO offsets based on the gains of the selected
+amplifier mode.
+</p>
 <!--end-->
 
 #### Input
