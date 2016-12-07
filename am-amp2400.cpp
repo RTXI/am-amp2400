@@ -283,10 +283,10 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
 				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 0.0;
@@ -299,10 +299,10 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
 				device->setAnalogGain(DAQ::AI, input_channel, izero_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, izero_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 5.0;
@@ -316,11 +316,11 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
 //				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
 //				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 0.0;
@@ -333,10 +333,10 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
 				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 5.0;
@@ -349,10 +349,10 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogRange(DAQ::AI, input_channel, 0);
 				device->setAnalogGain(DAQ::AI, input_channel, vclamp_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, vclamp_ao_gain);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 0.0;
@@ -365,10 +365,10 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
 				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 5.0;
@@ -381,10 +381,10 @@ void AMAmp::updateDAQ(void) {
 				device->setAnalogRange(DAQ::AI, input_channel, 3);
 				device->setAnalogGain(DAQ::AI, input_channel, iclamp_ai_gain*probe_gain_factor);
 				device->setAnalogZeroOffset(DAQ::AI, input_channel, ai_offset);
-				device->setAnalogCalibration(DAQ::AI, input_channel);
+				//device->setAnalogCalibration(DAQ::AI, input_channel);
 				device->setAnalogGain(DAQ::AO, output_channel, iclamp_ao_gain);
 				device->setAnalogZeroOffset(DAQ::AO, output_channel, ao_offset);
-				device->setAnalogCalibration(DAQ::AO, output_channel);
+				//device->setAnalogCalibration(DAQ::AO, output_channel);
 			}
 
 			output(0) = 0.0;
