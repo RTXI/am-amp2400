@@ -3,8 +3,10 @@
 **Requirements:** None  
 **Limitations:** None  
 
+
 ![AM Amp 2400 Controller GUI](am-amp2400.png)
 
+### Before RTXI 3.0.0
 <!--start-->
 <p>
 Controls the AM Amp 2400 amplifier by scaling the gains on the analog
@@ -38,4 +40,12 @@ amplifier mode.
    on current amplifier mode)
 
 #### States
+
+### RTXI 3.0.0
+The plugin has been completely redesigned to not require a real-time loop to control
+the amplifier. Instead the plugin provides convenience parameters and control system
+control settings that are relevant to the amplifier. In particular it is a shortcut to
+set system control analog and digital inputs, so the user does not require to open
+the system control plugin to enable and modify channels, as well as 'set DAQ' button
+to set the configuration.
 
