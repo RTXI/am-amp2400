@@ -131,7 +131,7 @@ void am_amp2400::Panel::customizeGUI()
   auto devices = std::any_cast<std::vector<DAQ::Device*>>(
       device_list_request.getParam("devices"));
 
-  auto* devicesComboBox = new QComboBox();
+  devicesComboBox = new QComboBox();
   for (auto* device : devices) {
     devicesComboBox->addItem(QString::fromStdString(device->getName()),
                              QVariant::fromValue(device));
@@ -290,7 +290,7 @@ void am_amp2400::Panel::customizeGUI()
                    this,
                    &am_amp2400::Panel::setProbeGain);
   QObject::connect(
-      setDaqButton, &QPushButton::clicked, this, &am_amp2400::Panel::updateDAQ);
+      setDaqButton, &QPushButton::clicked, this, &am_amp2400::Panel::modify);
 }
 
 void am_amp2400::Panel::setProbeGain(int index)
@@ -306,39 +306,44 @@ void am_amp2400::Panel::setProbeGain(int index)
 
 void am_amp2400::Panel::updateDAQ()
 {
+  if (devicesComboBox->count() == 0) {
+    ERROR_MSG("Unable to update device. No devices were found!");
+    return;
+  }
+  auto* current_device = devicesComboBox->currentData().value<DAQ::Device*>();
+  if (current_device == nullptr) {
+    ERROR_MSG(
+        "Device selected is nullptr. Aborting submission! Please email "
+        "info@rtxi.org for help.");
+  }
   switch (this->mode) {
     case amp_mode::VCLAMP:  // VClamp
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 0);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AI, input_channel, vclamp_ai_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AO, output_channel, vclamp_ao_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
-
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 0);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AI, input_channel, vclamp_ai_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AO, output_channel, vclamp_ao_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 0.0);
       current_device->writeinput(digital_line_1, 5.0);
       current_device->writeinput(digital_line_2, 0.0);
+
       break;
 
     case amp_mode::IEQ0:  // I = 0
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AI, input_channel, izero_ai_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(DAQ::ChannelType::AO,
-                                      output_channel,
-                                      izero_ao_gain * probe_gain_factor);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
-
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AI, input_channel, izero_ai_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(DAQ::ChannelType::AO,
+                                    output_channel,
+                                    izero_ao_gain * probe_gain_factor);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 5.0);
       current_device->writeinput(digital_line_1, 5.0);
       current_device->writeinput(digital_line_2, 0.0);
@@ -346,93 +351,82 @@ void am_amp2400::Panel::updateDAQ()
       break;
 
     case amp_mode::ICLAMP:  // IClamp
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AI, input_channel, iclamp_ai_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AO, output_channel, iclamp_ao_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AI, input_channel, iclamp_ai_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AO, output_channel, iclamp_ao_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 0.0);
       current_device->writeinput(digital_line_1, 0.0);
       current_device->writeinput(digital_line_2, 5.0);
       break;
 
     case amp_mode::VCOMP:  // VComp
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 0);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AI, input_channel, vclamp_ai_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AO, output_channel, vclamp_ao_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
-
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 0);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AI, input_channel, vclamp_ai_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AO, output_channel, vclamp_ao_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 5.0);
       current_device->writeinput(digital_line_1, 0.0);
       current_device->writeinput(digital_line_2, 0.0);
+
       break;
 
     case amp_mode::VTEST:  // VTest
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 0);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AI, input_channel, vclamp_ai_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AO, output_channel, vclamp_ao_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 0);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AI, input_channel, vclamp_ai_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AO, output_channel, vclamp_ao_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 0.0);
       current_device->writeinput(digital_line_1, 0.0);
       current_device->writeinput(digital_line_2, 0.0);
       break;
 
     case amp_mode::IRESIST:  // IResist
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AI, input_channel, iclamp_ai_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(DAQ::ChannelType::AO,
-                                      output_channel,
-                                      iclamp_ao_gain * probe_gain_factor);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AI, input_channel, iclamp_ai_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(DAQ::ChannelType::AO,
+                                    output_channel,
+                                    iclamp_ao_gain * probe_gain_factor);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 5.0);
       current_device->writeinput(digital_line_1, 0.0);
       current_device->writeinput(digital_line_2, 5.0);
-
       break;
 
     case amp_mode::IFOLLOW:  // IFollow
-      if (current_device != nullptr) {
-        current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
-        current_device->setAnalogGain(DAQ::ChannelType::AI,
-                                      input_channel,
-                                      iclamp_ai_gain * probe_gain_factor);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AI, input_channel, ai_offset);
-        current_device->setAnalogGain(
-            DAQ::ChannelType::AO, output_channel, iclamp_ao_gain);
-        current_device->setAnalogZeroOffset(
-            DAQ::ChannelType::AO, output_channel, ao_offset);
-      }
-
+      current_device->setAnalogRange(DAQ::ChannelType::AI, input_channel, 3);
+      current_device->setAnalogGain(DAQ::ChannelType::AI,
+                                    input_channel,
+                                    iclamp_ai_gain * probe_gain_factor);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AI, input_channel, ai_offset);
+      current_device->setAnalogGain(
+          DAQ::ChannelType::AO, output_channel, iclamp_ao_gain);
+      current_device->setAnalogZeroOffset(
+          DAQ::ChannelType::AO, output_channel, ao_offset);
       current_device->writeinput(digital_line_0, 0.0);
       current_device->writeinput(digital_line_1, 5.0);
       current_device->writeinput(digital_line_2, 5.0);
+
       break;
 
     default:
@@ -447,7 +441,9 @@ void am_amp2400::Panel::modify()
 {
   input_channel = inputBox->text().toInt();
   output_channel = outputBox->text().toInt();
-
+  digital_line_0 = bit1Box->text().toInt();
+  digital_line_1 = bit2Box->text().toInt();
+  digital_line_2 = bit4Box->text().toInt();
   ampButtonGroup->button(mode)->setStyleSheet("QRadioButton { font: normal; }");
   ampButtonGroup->button(mode)->setStyleSheet("QRadioButton { font: bold;}");
   const auto probe_gain = probe_gain_t(probeGainComboBox->currentIndex());
@@ -474,6 +470,9 @@ void am_amp2400::Panel::modify()
   aiOffsetEdit->blacken();
   aoOffsetEdit->blacken();
   probeGainComboBox->blacken();
+  bit1Box->blacken();
+  bit2Box->blacken();
+  bit4Box->blacken();
 }
 
 void am_amp2400::Panel::setAIOffset(const QString& offset)

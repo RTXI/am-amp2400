@@ -118,7 +118,6 @@ private:
   void customizeGUI();
   void updateDAQ();
   void initParameters();
-  DAQ::Device* current_device = nullptr;
   RunningStat* zero_signal_ptr = nullptr;
 
   QRadioButton* iclampButton = nullptr;
@@ -137,6 +136,7 @@ private:
   AMAmpLineEdit* aiOffsetEdit = nullptr;
   AMAmpLineEdit* aoOffsetEdit = nullptr;
   AMAmpComboBox* probeGainComboBox = nullptr;
+  QComboBox* devicesComboBox = nullptr;
   QLabel* aiOffsetUnits = nullptr;
   QLabel* aoOffsetUnits = nullptr;
 
